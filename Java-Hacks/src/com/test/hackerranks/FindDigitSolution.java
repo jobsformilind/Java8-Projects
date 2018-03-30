@@ -7,14 +7,17 @@ import java.util.stream.IntStream;
 public class FindDigitSolution {
 
 	public static void main(String[] args) {
-		String st1 = findNumbers8(0, 0, 99);
+		String st1 = findNumbers8(8, 0, 20);
 		System.out.println(st1);
 	}
 
 	//Java8 solution
 	static String findNumbers8(int digit, int start, int end) {
 		String strDigit = Integer.toString(digit);
-		List<String> collect = IntStream.range(0, 999).mapToObj(i -> Integer.toString(i)).filter(i -> i.contains(strDigit)).collect(Collectors.toList());
+		List<String> collect = IntStream.range(start, end)
+										.mapToObj(i -> Integer.toString(i))
+										.filter(i -> i.contains(strDigit))
+										.collect(Collectors.toList());
 		return collect.toString();
 	}
 	

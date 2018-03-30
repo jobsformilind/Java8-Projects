@@ -8,17 +8,22 @@ public class PersonStreamTest {
 		List<Person> persons = PersonCreator.getPersons();
 
 		//Create a map, key as name_age and value as person object
-		persons.stream()
-			   .collect(Collectors.toMap(
+		out(persons.stream()
+					.collect(Collectors.toMap(
 					   person->person.getName()+"_" + person.getAge(), 
-					   person->person));
+					   person->person)));
 	
-		//Create a map, key as name and value as list of people
-		persons.stream()
-		   .collect(Collectors.toMap(
-				   person->person.getName(), 
-				   person->person));
+		//Create a map, key as name and value as list of people by the name
+		out(persons.stream()
+				.collect(Collectors.groupingBy(Person::getName)));		
+	
+		//Create a map, key as name and value is all the ages of people by the name
+		out(persons.stream()
+				.collect(Collectors.groupingBy(Person::getName, Collectors.mapping(Person::getAge, Collectors.toList()))));
 		
+	}
 	
+	private static void out(Object obj) {
+		System.out.println(obj);
 	}
 }
