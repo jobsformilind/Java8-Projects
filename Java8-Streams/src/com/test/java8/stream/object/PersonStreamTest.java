@@ -24,6 +24,8 @@ public class PersonStreamTest {
 		//groups persons by gender
 		out(persons.stream().collect(Collectors.groupingBy(Person::getGender)));
 		
+		
+		
 	}
 	
 	private static void out(Object obj) {
