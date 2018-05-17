@@ -1,4 +1,4 @@
-package com.test.hackerranks;
+package com.test.interview;
 
 public class AnagramSolution {
 	public static void main(String[] args) {

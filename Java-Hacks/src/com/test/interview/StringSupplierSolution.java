@@ -1,4 +1,4 @@
-package com.test.hackerranks;
+package com.test.interview;
 
 import java.util.ArrayList;
 import java.util.List;

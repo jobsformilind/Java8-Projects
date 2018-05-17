@@ -1,4 +1,4 @@
-package com.test.hackerranks;
+package com.test.interview;
 
 import java.util.List;
 import java.util.stream.Collectors;

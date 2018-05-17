@@ -1,0 +1,20 @@
+
+
+
+
+avg of salary of dept
+
+dept1 - avg sal
+
+select d.id, d.name, avg(e.salary) from employee e, dept d WHERE e.dept_id = d.id GROUP BY d.id;
+
+select d.deptno, d.dname, avg(e.sal) from emp e, dept d WHERE e.deptno = d.deptno GROUP BY d.deptno, d.dname;
+
+
+select name, count(id) as staff, avg(salary) from dept group by id 
+
+
+select d.dname, avg(e.sal) from emp e, dept d WHERE e.deptno = d.deptno GROUP BY d.dname;
+
+        
+        
