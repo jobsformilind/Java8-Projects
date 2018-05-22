@@ -11,8 +11,9 @@ public class AnagramSolution {
 	}
 
 	static boolean isAnagram(String str1, String str2) {
-		if (str1 == null || str2 == null)
+		if (str1 == null || str2 == null || str1.length() != str2.length())
 			return false;
+
 		String st1 = str1.toLowerCase();
 		String st2 = str2.toLowerCase();
 		if (st1.equals(st2))
