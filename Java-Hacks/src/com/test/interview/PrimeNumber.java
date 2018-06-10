@@ -3,8 +3,21 @@ package com.test.interview;
 public class PrimeNumber {
 
 	public static void main(String[] args) {
-		int[] arr = {};
-		System.out.println(getLowestPrime(arr));
+		int[] arr = {15, 17, 19, 3, 7};
+		System.out.println("Lowest Prime: " + getLowestPrime(arr));
+		System.out.println("SUM: " + sumOfPrimeNumbers(100));
+	}
+
+	public static long sumOfPrimeNumbers(int upto) {
+		long sum = 0;
+		int pivot = 1;
+		for (int count = 0; pivot <= upto; count++) {
+			if (isPrime(count)) {
+				sum += count;
+				pivot++;
+			}
+		}
+		return sum;
 	}
 
 	public static int getLowestPrime(int[] someNumbers) {
