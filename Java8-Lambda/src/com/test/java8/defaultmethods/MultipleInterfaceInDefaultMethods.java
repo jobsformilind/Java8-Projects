@@ -1,6 +1,6 @@
-package com.test.java8.features;
+package com.test.java8.defaultmethods;
 
-public class TestDefaultMethod implements Interface1, Interface2 {
+public class MultipleInterfaceInDefaultMethods implements Interface1, Interface2 {
 
 	@Override
 	public void method2() {
@@ -46,5 +46,9 @@ interface Interface2 {
 
 	default void log(String str) {
 		System.out.println("Inside Interface2.log : str=" + str);
+	}
+
+	static void print(String str) {
+		System.out.println("Inside Interface2.print : str=" + str);
 	}
 }

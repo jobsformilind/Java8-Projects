@@ -1,4 +1,4 @@
-package com.test.java8.features;
+package com.test.java8.json;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

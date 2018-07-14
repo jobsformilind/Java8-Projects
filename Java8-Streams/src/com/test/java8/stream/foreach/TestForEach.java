@@ -1,4 +1,4 @@
-package com.test.java8.features;
+package com.test.java8.stream.foreach;
 
 import java.util.Iterator;
 import java.util.List;
