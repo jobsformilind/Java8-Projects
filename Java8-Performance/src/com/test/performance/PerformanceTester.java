@@ -13,13 +13,14 @@ public class PerformanceTester {
 	public static void main(String[] args) {
 		PerformanceTester tester = new PerformanceTester();
 		ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-		service.scheduleAtFixedRate(() -> tester.test(), 1, 1, TimeUnit.SECONDS);
+		service.scheduleAtFixedRate(() -> tester.test(), 100, 100, TimeUnit.MILLISECONDS);
 	}
 
 	public void test() {
 		slowLeakingMethod(1_000, 30);
 		notLeakingMethod(50_000);
-		System.out.println("Test is executed on : " + new Timestamp(System.currentTimeMillis()) + ", Size: " +  permStore.size());
+		System.out.println("Test is executed on : " + new Timestamp(System.currentTimeMillis()));// + ", Size: " +
+																									// permStore.size());
 	}
 
 	private void slowLeakingMethod(int addCounter, int removeCounter) {
@@ -36,5 +37,7 @@ public class PerformanceTester {
 		for (int i = 0; i < counter; i++) {
 			list.add(i);
 		}
+		list.clear();
+		list = null;
 	}
 }
