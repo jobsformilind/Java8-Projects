@@ -38,13 +38,14 @@ class Runner {
 			lock.unlock();	
 		}
 	}
+	@SuppressWarnings("resource")
 	public void second() {
 		try {
 			Thread.sleep(1000);
 			lock.lock();
 			System.out.println("Second Press return key");
-			new Scanner(System.in).nextLine();
-			System.out.println("Second Got return key");
+			String nextLine = new Scanner(System.in).nextLine();
+			System.out.println("Second Got return key: " + nextLine);
 			condition.signal();
 			increment();
 		} catch (InterruptedException e) {

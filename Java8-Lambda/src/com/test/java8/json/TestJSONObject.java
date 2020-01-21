@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class TestJSONObject {
 	public static void main(String[] args) {		
 		JSONObject json = new JSONObject();
