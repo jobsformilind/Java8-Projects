@@ -27,7 +27,7 @@ public class PageLinkParser {
 	
 	
 	private static synchronized void processPageData(String pageNo, String url) {
-		String data = URLUtils.downlaodUnparsedData(url);
+		String data = URLUtils.downlaodUnparsedData(url).toString();
 		data = normalizeData(data);
 		//System.out.println("---"+data);
 		boolean breakMe = true;

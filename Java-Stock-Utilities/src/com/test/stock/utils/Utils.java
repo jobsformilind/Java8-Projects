@@ -43,7 +43,7 @@ public class Utils {
 	}
 
 	public static boolean startsWith(String command, String startsWith) {
-		if(isNotEmpty(command) && isNotEmpty(startsWith)) {
+		if (isNotEmpty(command) && isNotEmpty(startsWith)) {
 			String upperCase = startsWith.toUpperCase();
 			return command.startsWith(startsWith) || command.startsWith(upperCase);
 		}
@@ -62,6 +62,29 @@ public class Utils {
 		return false;
 	}
 
+	public static String trimToNull(String st) {
+		return defaultIfEmpty(st, null);
+	}
+
+	public static String trimToEmpty(String st) {
+		return defaultIfEmpty(st, "");
+	}
+
+	public static String defaultIfEmpty(String st, String defaultStr) {
+		String retValue = isEmpty(st) ? defaultStr : st.trim();
+		if ("None".equalsIgnoreCase(retValue)) {
+			retValue = "0";
+		}
+		return retValue;
+	}
+
+	public static int indexOfIncludingString(String data, String str) {
+		if (str != null && data != null && data.indexOf(str) > 0) {
+			return data.indexOf(str) + str.length();
+		}
+		return 0;
+	}
+
 	public static void writeFile(String fileName, String data) throws Exception {
 		Files.write(Paths.get(fileName), data.getBytes());
 	}
@@ -72,8 +95,13 @@ public class Utils {
 
 	public static List<String> getDataFromFile(String dataFile) throws IOException {
 		try (Stream<String> stream = Files.lines(Paths.get(dataFile))) {
-			return stream.filter(Objects::nonNull).map(s->s.trim()).filter(Utils::isNotEmpty).collect(Collectors.toList());
+			return stream.filter(Objects::nonNull).map(s -> s.trim()).filter(Utils::isNotEmpty)
+					.collect(Collectors.toList());
 		}
+	}
+
+	public static String toIntDefault(String st) {
+		return isEmpty(st) ? "0" : st.trim();
 	}
 
 	public static int toInt(String st) {
@@ -84,4 +112,55 @@ public class Utils {
 		return 0;
 	}
 
+	public static int toIntOrDefault(String st, int def) {
+		try {
+			return Integer.parseInt(st);
+		} catch (NumberFormatException e) {
+		}
+		return def;
+	}
+
+	public static boolean isNotDouble(String str) {
+		return !isDouble(str);
+	}
+
+	public static boolean isDouble(String str) {
+		try {
+			Double.parseDouble(str);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
+	public static String getRequiredSystemProperty(String propertyName) {
+		String property = System.getProperty(propertyName);
+		if (isEmpty(property)) {
+			property = System.getenv(propertyName);
+			if (isEmpty(property)) {
+				System.out.println("Please set system/env property: " + propertyName);
+				System.exit(0);
+			}
+		}
+		return property;
+	}
+
+	public static String getStocksHomeDir() {
+		return Utils.getRequiredSystemProperty("MY_STOCKS_HOME") + "\\";
+	}
+
+	public static int extractNumber(String data) {
+		int pages = 1;
+		if (isNotEmpty(data)) {
+			char[] charArray = data.toCharArray();
+			String num = "";
+			for (int i = 0; i < charArray.length; i++) {
+				if (Character.isDigit(charArray[i])) {
+					num = num + Character.toString(charArray[i]);
+				}
+			}
+			pages = toIntOrDefault(num, 1);
+		}
+		return pages;
+	}
 }

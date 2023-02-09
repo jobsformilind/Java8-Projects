@@ -5,6 +5,8 @@ import java.util.Comparator;
 import com.test.stock.utils.Utils;
 
 public class Stock implements Comparator<Stock>, Comparable<Stock> {
+	boolean consolidated;
+	int companyId;
 	String symbol = "";
 	String bseSymbol = "";
 	String nseSymbol = "";
@@ -13,21 +15,18 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	String cagr3 = "";
 	String cagr5 = "";
 	String cagr10 = "";
-	String roe1 = "";
-	String roe3 = "";
-	String roe5 = "";
-	String roe10 = "";
-	String profit1 = "";
-	String profit3 = "";
-	String profit5 = "";
-	String profit10 = "";
-	int cagrAvg35;
-	int profitAvg35;
-	int roeAvg35;
+	String sale1 = "";
+	String sale3 = "";
+	String sale5 = "";
+	String sale10 = "";
 	int cagrAvg;
-	int profitAvg;
-	int roeAvg;
+	int saleAvg;
+	String marketCap = "";
+	String PE = "";
+	String medianPE = "";
+	String EPS = "";
 	String sector = "";
+	String error = "";
 
 	public Stock(String symbol) {
 		this.symbol = trim(symbol);
@@ -35,57 +34,65 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	public String getCSV() {
 		StringBuffer buff = new StringBuffer();
-		buff.append(symbol).append(",");
 		buff.append(bseSymbol).append(",");
 		buff.append(nseSymbol).append(",");
+		buff.append(symbol).append(",");
 		buff.append(faceValue).append(",");
+		buff.append("XXXX").append(",");
+		buff.append("000").append(",");
+
+		buff.append(EPS).append(",");
+		buff.append(medianPE).append(",");
+		buff.append(Utils.defaultIfEmpty(medianPE, PE)).append(",");
+		buff.append(saleAvg).append(",");
+
 		buff.append(cagr1).append(",");
-		buff.append(roe1).append(",");
-		buff.append(profit1).append(",");
 		buff.append(cagr3).append(",");
-		buff.append(roe3).append(",");
-		buff.append(profit3).append(",");
 		buff.append(cagr5).append(",");
-		buff.append(roe5).append(",");
-		buff.append(profit5).append(",");
 		buff.append(cagr10).append(",");
-		buff.append(roe10).append(",");
-		buff.append(profit10).append(",");
-		buff.append(cagrAvg35).append(",");
-		buff.append(roeAvg35).append(",");
-		buff.append(profitAvg35).append(",");
 		buff.append(cagrAvg).append(",");
-		buff.append(roeAvg).append(",");
-		buff.append(profitAvg).append(",");
-		buff.append(sector);
+
+		buff.append(marketCap).append(",");
+		buff.append(sector).append(",");
+
+		buff.append(sale1).append(",");
+		buff.append(sale3).append(",");
+		buff.append(sale5).append(",");
+		buff.append(sale10).append(",");
+
+		buff.append(PE);
 		return buff.toString();
 	}
 
 	public static String getCSVHeader() {
 		StringBuffer buff = new StringBuffer();
-		buff.append("symbol").append(",");
-		buff.append("bseSymbol").append(",");
-		buff.append("nseSymbol").append(",");
-		buff.append("faceValue").append(",");
-		buff.append("cagr1").append(",");
-		buff.append("roe1").append(",");
-		buff.append("profit1").append(",");
-		buff.append("cagr3").append(",");
-		buff.append("roe3").append(",");
-		buff.append("profit3").append(",");
-		buff.append("cagr5").append(",");
-		buff.append("roe5").append(",");
-		buff.append("profit5").append(",");
-		buff.append("cagr10").append(",");
-		buff.append("roe10").append(",");
-		buff.append("profit10").append(",");
-		buff.append("cagrAvg35").append(",");
-		buff.append("roeAvg35").append(",");
-		buff.append("profitAvg35").append(",");
-		buff.append("cagrAvg").append(",");
-		buff.append("roeAvg").append(",");
-		buff.append("profitAvg").append(",");
-		buff.append("sector").append("\n");
+		buff.append("BSE").append(",");
+		buff.append("NSE").append(",");
+		buff.append("Symbol").append(",");
+		buff.append("FV").append(",");
+		buff.append("Name").append(",");
+		buff.append("Hi3Y").append(",");
+
+		buff.append("EPS").append(",");
+		buff.append("M_PE").append(",");
+		buff.append("A_PE").append(",");
+		buff.append("S_Avg").append(",");
+
+		buff.append("C_1").append(",");
+		buff.append("C_3").append(",");
+		buff.append("C_5").append(",");
+		buff.append("C_10").append(",");
+		buff.append("C_Avg").append(",");
+		buff.append("MCap").append(",");
+		buff.append("sector").append(",");
+
+		buff.append("S_1").append(",");
+		buff.append("S_3").append(",");
+		buff.append("S_5").append(",");
+		buff.append("S_10").append(",");
+		buff.append("PE");
+
+		buff.append("\n");
 		return buff.toString();
 	}
 
@@ -123,11 +130,19 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	}
 
 	public void setBseSymbol(String bseSymbol) {
-		this.bseSymbol = bseSymbol;
+		if(Utils.isEmpty(this.bseSymbol)) {
+			if(Utils.isNotEmpty(bseSymbol)) {
+				this.bseSymbol = bseSymbol;
+			}
+		}
 	}
 
 	public void setNseSymbol(String nseSymbol) {
-		this.nseSymbol = nseSymbol;
+		if(Utils.isEmpty(this.nseSymbol)) {
+			if(Utils.isNotEmpty(nseSymbol)) {
+				this.nseSymbol = nseSymbol;
+			}
+		}
 	}
 
 	public String getBseSymbol() {
@@ -136,38 +151,6 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	public String getNseSymbol() {
 		return nseSymbol;
-	}
-
-	public void setRoe1(String roe1) {
-		this.roe1 = trim(roe1);
-	}
-
-	public void setRoe3(String roe3) {
-		this.roe3 = trim(roe3);
-	}
-
-	public void setRoe5(String roe5) {
-		this.roe5 = trim(roe5);
-	}
-
-	public void setRoe10(String roe10) {
-		this.roe10 = trim(roe10);
-	}
-
-	public void setProfit1(String profit1) {
-		this.profit1 = trim(profit1);
-	}
-
-	public void setProfit3(String profit3) {
-		this.profit3 = trim(profit3);
-	}
-
-	public void setProfit5(String profit5) {
-		this.profit5 = trim(profit5);
-	}
-
-	public void setProfit10(String profit10) {
-		this.profit10 = trim(profit10);
 	}
 
 	public String getCagr3() {
@@ -182,30 +165,6 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		return cagr10;
 	}
 
-	public String getRoe3() {
-		return roe3;
-	}
-
-	public String getRoe5() {
-		return roe5;
-	}
-
-	public String getRoe10() {
-		return roe10;
-	}
-
-	public String getProfit3() {
-		return profit3;
-	}
-
-	public String getProfit5() {
-		return profit5;
-	}
-
-	public String getProfit10() {
-		return profit10;
-	}
-
 	public String getFaceValue() {
 		return faceValue;
 	}
@@ -218,60 +177,8 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		return cagrAvg;
 	}
 
-	public String getRoe1() {
-		return roe1;
-	}
-
-	public String getSector() {
-		return sector;
-	}
-
-	public int getProfitAvg() {
-		return profitAvg;
-	}
-
-	public void setProfitAvg(int profitAvg) {
-		this.profitAvg = profitAvg;
-	}
-
-	public int getRoeAvg() {
-		return roeAvg;
-	}
-
-	public void setRoeAvg(int roeAvg) {
-		this.roeAvg = roeAvg;
-	}
-
-	public String getProfit1() {
-		return profit1;
-	}
-
 	public void setCagrAvg(int cagrAvg) {
 		this.cagrAvg = cagrAvg;
-	}
-
-	public int getCagrAvg35() {
-		return cagrAvg35;
-	}
-
-	public void setCagrAvg35(int cagrAvg35) {
-		this.cagrAvg35 = cagrAvg35;
-	}
-
-	public int getProfitAvg35() {
-		return profitAvg35;
-	}
-
-	public void setProfitAvg35(int profitAvg35) {
-		this.profitAvg35 = profitAvg35;
-	}
-
-	public int getRoeAvg35() {
-		return roeAvg35;
-	}
-
-	public void setRoeAvg35(int roeAvg35) {
-		this.roeAvg35 = roeAvg35;
 	}
 
 	@Override
@@ -308,5 +215,106 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		}
 		return "NC";
 	}
+
+	public String getSale1() {
+		return sale1;
+	}
+
+	public void setSale1(String sale1) {
+		this.sale1 = sale1;
+	}
+
+	public String getSale3() {
+		return sale3;
+	}
+
+	public void setSale3(String sale3) {
+		this.sale3 = sale3;
+	}
+
+	public String getSale5() {
+		return sale5;
+	}
+
+	public void setSale5(String sale5) {
+		this.sale5 = sale5;
+	}
+
+	public String getSale10() {
+		return sale10;
+	}
+
+	public void setSale10(String sale10) {
+		this.sale10 = sale10;
+	}
+
+	public int getSaleAvg() {
+		return saleAvg;
+	}
+
+	public void setSaleAvg(int saleAvg) {
+		this.saleAvg = saleAvg;
+	}
+
+	public String getSector() {
+		return sector;
+	}
+
+	public String getMarketCap() {
+		return marketCap;
+	}
+
+	public void setMarketCap(String marketCap) {
+		this.marketCap = marketCap;
+	}
+
+	public String getPE() {
+		return PE;
+	}
+
+	public void setPE(String pE) {
+		PE = pE;
+	}
+
+	public String getEPS() {
+		return EPS;
+	}
+
+	public void setEPS(String ePS) {
+		EPS = ePS;
+	}
+
+	public boolean isConsolidated() {
+		return consolidated;
+	}
+
+	public void setConsolidated(boolean consolidated) {
+		this.consolidated = consolidated;
+	}
+
+	public int getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(int companyId) {
+		this.companyId = companyId;
+	}
+
+	public String getMedianPE() {
+		return medianPE;
+	}
+
+	public void setMedianPE(String medianPE) {
+		this.medianPE = medianPE;
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
+	}
+
 
 }

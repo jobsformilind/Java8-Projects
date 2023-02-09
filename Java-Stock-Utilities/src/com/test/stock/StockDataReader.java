@@ -11,12 +11,12 @@ import com.test.stock.utils.URLUtils;
 import com.test.stock.utils.Utils;
 
 public class StockDataReader {
-	static String stocksDir = "D:\\Temp-Stocks\\";
-	static String inFile = stocksDir + "in.txt";
-	static String nseFile = stocksDir + "nse.csv";
-	static String bseFile = stocksDir + "bse.csv";
-	static String outFile = stocksDir + "out.csv";
-	static String singleFile = stocksDir + "single.csv";
+	static Set<Stock> failedStocks = new TreeSet<>();
+	static String inFile = Utils.getStocksHomeDir() + "in.txt";
+	static String nseFile = Utils.getStocksHomeDir() + "nse.csv";
+	static String bseFile = Utils.getStocksHomeDir() + "bse.csv";
+	static String outFile = Utils.getStocksHomeDir() + "out.csv";
+	static String singleFile = Utils.getStocksHomeDir() + "single.csv";
 	static String symbol = null;
 	static boolean update = false;
 	static boolean downloadOnly = false;
@@ -47,17 +47,9 @@ public class StockDataReader {
 				} else if (Utils.startsWith(command, "-D")) {
 					update = true;
 					downloadOnly = true;
-				} else if (Utils.startsWith(command, "-debug")) {
-					URLUtils.DEBUG = true;
 				} else if (Utils.startsWith(command, "-s=")) {
 					symbol = command.substring(3);
 					update = true;
-				} else if (Utils.startsWith(command, "-cagr=")) {
-					cagr = Utils.toInt(command.substring(6));
-				} else if (Utils.startsWith(command, "-roe=")) {
-					roe = Utils.toInt(command.substring(5));
-				} else if (Utils.startsWith(command, "-profit=")) {
-					profit = Utils.toInt(command.substring(8));
 				} else if (Utils.startsWith(command, "-sleep=")) {
 					sleep = Utils.toInt(command.substring(7));
 				}
@@ -122,14 +114,33 @@ public class StockDataReader {
 		URLUtils.log("Starting stocks data analysis");
 		Counter.initCounter(stockSet.size());
 		stockSet.stream().forEach(s -> {
-			URLUtils.log("-");
 			Counter.getCounter().currentIncrease();
 			StockDataReader.analyzeStockData(s);
+			URLUtils.log("");
 		});
 		URLUtils.log("Stocks Data analysis is completed.");
+		if(failedStocks.size()>0) {
+			URLUtils.log("Error in Stocks: " + failedStocks);
+		}
 		URLUtils.log("------------------------------");
 	}
-
+	public static synchronized Stock analyzeStockData1(Stock stock) {
+		try {
+			String data = URLUtils.readDataFromStart(stock, "QuarterlyResults", "NetProfit=", "=EPSinRs");
+			data = URLUtils.readDataBetweenUsingEndTag(data, "=", "=EPSinRs");
+			
+			data = URLUtils.readDataFromStart(stock, "BSE:", "=");
+			data = URLUtils.readDataBetween(data, "BSE:", "=");
+			
+			data = URLUtils.readDataFromEnd(stock, "=EPSinRs=", "=DividendPayout%=");
+			data = URLUtils.readDataBetweenUsingEndTag(data, "=", "=DividendPayout%=");
+		} catch (Exception e) {
+			stock.setError(e.getMessage());
+			failedStocks.add(stock);
+			e.printStackTrace();
+		}
+		return stock;
+	}
 	private static synchronized Stock analyzeStockData(Stock stock) {
 		URLUtils.log("--------------Analyze stock: " + stock);
 		try {
@@ -137,6 +148,11 @@ public class StockDataReader {
 			stock.setBseSymbol(URLUtils.readDataBetween(stock, "BSE:", "="));
 			stock.setNseSymbol(URLUtils.readDataBetween(stock, "NSE:", "="));
 			stock.setSector(URLUtils.extractText(URLUtils.readDataBetween(stock, "Sector:", "=")));
+			
+			stock.setMarketCap(URLUtils.readDataBetween(stock, "=MarketCap=", "="));
+			stock.setEPS(URLUtils.readDataBetweenUsingEndTag(stock, "=", "=DividendPayout%="));
+			stock.setMedianPE(URLUtils.readDataBetween(stock, "MedianPE=", "="));
+			stock.setPE(URLUtils.readDataBetween(stock, "StockPEarn=", "="));
 
 			String cagrData = URLUtils.readDataBetween(stock, "StockPriceCAGR", "ReturnonEquity");
 			URLUtils.parseCAGR(stock, cagrData);
@@ -146,6 +162,9 @@ public class StockDataReader {
 
 			String profitData = URLUtils.readDataBetween(stock, "CompoundedProfitGrowth", "StockPriceCAGR");
 			URLUtils.parseProfit(stock, profitData);
+
+			String salesData = URLUtils.readDataBetween(stock, "CompoundedSalesGrowth", "CompoundedProfitGrowth");
+			URLUtils.parseSales(stock, salesData);
 
 			checkNSESymbol(stock, "NSE-SM:");
 			checkNSESymbol(stock, "NSE-RR:");
@@ -212,7 +231,7 @@ public class StockDataReader {
 
 	private static synchronized Set<Stock> getStockSymbols() throws Exception {
 		SortedSet<String> readSymbols = URLUtils.readSymbols(inFile);
-		Set<Stock> stocksSet = readSymbols.stream().filter(Objects::nonNull).map(Stock::new).sorted()
+		Set<Stock> stocksSet = readSymbols.stream().map(Utils::trimToNull).filter(Objects::nonNull).map(Stock::new).sorted()
 				.collect(Collectors.toSet());
 		return stocksSet;
 	}
