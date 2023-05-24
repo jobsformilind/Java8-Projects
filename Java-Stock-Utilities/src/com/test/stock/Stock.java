@@ -6,6 +6,7 @@ import com.test.stock.utils.Utils;
 
 public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	boolean consolidated;
+	boolean forceUpdate;
 	int companyId;
 	String symbol = "";
 	String bseSymbol = "";
@@ -316,5 +317,11 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		this.error = error;
 	}
 
+	public boolean isForceUpdate() {
+		return forceUpdate;
+	}
 
+	public void setForceUpdate(boolean forceUpdate) {
+		this.forceUpdate = forceUpdate;
+	}
 }

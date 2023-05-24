@@ -1,10 +1,15 @@
 package com.test.stock.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +53,10 @@ public class Utils {
 			return command.startsWith(startsWith) || command.startsWith(upperCase);
 		}
 		return false;
+	}
+
+	public static boolean notCommented(String st) {
+		return !st.startsWith("#");
 	}
 
 	public static boolean isNotEmpty(String st) {
@@ -163,4 +172,105 @@ public class Utils {
 		}
 		return pages;
 	}
+
+	public static String getFileName(String fileName, String extn) {
+		if (fileName != null && fileName.indexOf(extn) > 0) {
+			int start = fileName.indexOf(extn);
+			fileName = fileName.substring(0, start);
+		}
+		return fileName;
+	}
+
+	public static String ensureDirectory(String parentDirectory, String directoryName) {
+		File dir = null;
+		if (parentDirectory != null && directoryName != null) {
+			dir = new File(parentDirectory, directoryName);
+		} else if (directoryName != null) {
+			dir = new File(directoryName);
+		}
+		if (dir != null) {
+			dir.mkdirs();
+			return dir.getAbsolutePath();
+		}
+		return null;
+	}
+
+	public static String ensureFile(String parentDirectory, String fileName) throws Exception {
+		File file = null;
+		if (parentDirectory != null && fileName != null) {
+			file = new File(parentDirectory, fileName);
+		} else if (fileName != null) {
+			file = new File(fileName);
+		}
+		if (file != null) {
+			file.createNewFile();
+			return file.getAbsolutePath();
+		}
+		return null;
+	}
+
+	public static List<File> readFilesList(String directory, String extn) throws Exception {
+		return Files.walk(Paths.get(directory), 1).filter(Files::isRegularFile).map(Path::toFile)
+				.filter(f -> f.getName().endsWith(extn)).collect(Collectors.toList());
+	}
+
+	public static Map<String, File> readFilesMap(String directory, String extn) throws Exception {
+		Map<String, File> filesMap = new HashMap<>();
+		List<File> filesList = Files.walk(Paths.get(directory), 1).filter(Files::isRegularFile).map(Path::toFile)
+				.filter(f -> f.getName().endsWith(extn)).collect(Collectors.toList());
+		for (File file : filesList) {
+			filesMap.put(Utils.getFileName(file.getName(), extn), file);
+		}
+		return filesMap;
+	}
+
+	public static void printUnprocessedMap(Map<String, String> unprocessedMap) {
+		unprocessedMap.entrySet().stream().forEach(e -> {
+			System.out.println("*** Not Processesd: " + e);
+		});
+	}
+
+	public static Map<String, String> readData(String dataFile) throws Exception {
+		Map<String, String> data = new HashMap<>();
+		Stream<String> stream = Files.lines(Paths.get(dataFile));
+		stream.filter(Objects::nonNull).filter(Utils::notCommented).forEach(line -> {
+			if (line.indexOf("=") > 0) {
+				String[] split = line.split("=");
+				data.put(Utils.trimToEmpty(split[0]), Utils.trimToEmpty(split[1]));
+			} else if (line.indexOf(",") > 0) {
+				String[] split = line.split(",");
+				data.put(Utils.trimToEmpty(split[0]), Utils.trimToEmpty(split[1]));
+			}
+		});
+		stream.close();
+		return data;
+	}
+
+	public static MultiValueMap<String, String> readDuplicateData(String dataFile) throws Exception {
+		MultiValueMap<String, String> data = new MultiValueMap<>();
+		Stream<String> stream = Files.lines(Paths.get(dataFile));
+		stream.filter(Objects::nonNull).filter(Utils::notCommented).forEach(line -> {
+			if (line.indexOf("=") > 0) {
+				String[] split = line.split("=");
+				data.put(Utils.trimToEmpty(split[0]), Utils.trimToEmpty(split[1]));
+			} else if (line.indexOf(",") > 0) {
+				String[] split = line.split(",");
+				data.put(Utils.trimToEmpty(split[0]), Utils.trimToEmpty(split[1]));
+			}
+		});
+		stream.close();
+		return data;
+	}
+	public static void copyFile(File soureFile, File targetFile) {
+		try {
+			Path sourePath = soureFile.toPath();
+			Path targetPath = targetFile.toPath();
+			System.out.print("SourePath=" + sourePath.getFileName());
+			System.out.println(" -> TargetPath=" + targetPath.getFileName());
+			Files.copy(sourePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

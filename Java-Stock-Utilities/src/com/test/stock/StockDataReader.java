@@ -19,6 +19,7 @@ public class StockDataReader {
 	static String singleFile = Utils.getStocksHomeDir() + "single.csv";
 	static String symbol = null;
 	static boolean update = false;
+	static boolean forceUpdate = false;
 	static boolean downloadOnly = false;
 	static int cagr;
 	static int roe;
@@ -42,8 +43,9 @@ public class StockDataReader {
 		if (args.length > 0) {
 			for (String command : args) {
 				URLUtils.log("Processing command: " + command);
-				if (Utils.startsWith(command, "-u")) {
+				if (Utils.startsWith(command, "-f")) {
 					update = true;
+					forceUpdate = true;
 				} else if (Utils.startsWith(command, "-D")) {
 					update = true;
 					downloadOnly = true;
@@ -215,6 +217,7 @@ public class StockDataReader {
 		Counter.initCounter(symbolsSet.size());
 		symbolsSet.stream().filter(Objects::nonNull).filter(p -> Boolean.valueOf(update)).forEach(s -> {
 			Counter.getCounter().currentIncrease();
+			s.setForceUpdate(forceUpdate);
 			URLUtils.log("");
 			StockDataReader.downloadStockData(s, update);
 		});

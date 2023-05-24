@@ -316,6 +316,9 @@ public class URLUtils {
 	}
 
 	public static boolean needsUpdate(Stock stock) {
+		if(stock.isForceUpdate()) {
+			return true;
+		}
 		try {
 			String fileName = cacheFolder + stock + ".html";
 			FileTime lastModifiedTime = Files.getLastModifiedTime(Paths.get(fileName));
