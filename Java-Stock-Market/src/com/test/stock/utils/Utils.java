@@ -12,12 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalDouble;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.openqa.selenium.logging.Logs;
 
 public class Utils {
 
@@ -288,33 +287,8 @@ public class Utils {
 			System.out.println(" -> TargetPath=" + targetPath.getFileName());
 			Files.copy(sourePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
 		} catch (Exception e) {
-			handleException(e);
+			e.printStackTrace();
 		}
 	}
 
-	public static String substring (String str, int length) {
-		try {
-			if(str != null) {
-				int length2 = str.length();
-				if(length2>length) {
-					str = str.substring(0, length);
-				}
-			}
-		} catch (Exception e) {
-			handleException(e);
-		}
-		return str;
-	}
-	
-	public static void handleException(Exception ex) {
-		ex.printStackTrace();
-		System.exit(0);
-	}
-	public static void log(String logString, Object... args) {
-		if (logString != null) {
-			logString = logString.replace("{}", "%s");
-			String str = String.format(logString, args);
-			System.out.println(str);
-		}
-	}
 }

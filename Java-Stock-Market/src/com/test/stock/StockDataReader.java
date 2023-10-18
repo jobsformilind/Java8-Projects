@@ -1,8 +1,9 @@
 package com.test.stock;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.test.stock.utils.Counter;
@@ -10,7 +11,7 @@ import com.test.stock.utils.URLUtils;
 import com.test.stock.utils.Utils;
 
 public class StockDataReader {
-	static Set<Stock> failedStocks = new HashSet<>();
+	static Set<Stock> failedStocks = new TreeSet<>();
 	static String inFile = Utils.getStocksHomeDir() + "in.txt";
 	static String nseFile = Utils.getStocksHomeDir() + "nse.csv";
 	static String bseFile = Utils.getStocksHomeDir() + "bse.csv";
@@ -18,7 +19,6 @@ public class StockDataReader {
 	static String singleFile = Utils.getStocksHomeDir() + "single.csv";
 	static String symbol = null;
 	static boolean update = false;
-	static boolean dryrun = false;
 	static int updateDays = -1;
 	static boolean forceUpdate = false;
 	static boolean downloadOnly = false;
@@ -26,16 +26,6 @@ public class StockDataReader {
 	static int roe;
 	static int profit;
 	static long sleep = 3000;
-	public static void main1(String[] args) throws Exception {
-		update = true;
-		downloadOnly = true;
-		while(true) {
-			Set<Stock> stocksSet = getStockSymbols();
-			String collect = stocksSet.stream().limit(5).map(s->s.toString()).collect(Collectors.joining(","));;
-			System.out.println(collect);
-			Thread.sleep(500);
-		}
-	}
 
 	public static void main(String[] args) throws Exception {
 		URLUtils.logClean();
@@ -44,18 +34,9 @@ public class StockDataReader {
 			getDataForSingleSymbol(symbol);
 		} else if (downloadOnly) {
 			updateDataForAllSymbols();
-		} else if (dryrun) {
-			for(int i=0;i<10;i++) {
-				Set<Stock> stocksSet = getStockSymbols();
-				stocksSet.stream().limit(10).forEach(s->{
-					System.out.print(s+", ");
-				});
-				System.out.println();
-			}
 		} else {
 			getDataForAllSymbols();
 		}
-		URLUtils.cleanupTempFiles();
 	}
 
 	private static void checkArgs(String[] args) throws Exception {
@@ -66,8 +47,6 @@ public class StockDataReader {
 				if (Utils.startsWith(command, "-f")) {
 					update = true;
 					forceUpdate = true;
-				} else if (Utils.startsWith(command, "-run")) {
-					dryrun = true;
 				} else if (Utils.startsWith(command, "-D")) {
 					update = true;
 					downloadOnly = true;
@@ -99,20 +78,14 @@ public class StockDataReader {
 
 	public static void getDataForAllSymbols() throws Exception {
 		Set<Stock> stocksSet = getStockSymbols();
-		readStockMetaData(stocksSet);
 		downloadStockData(stocksSet);
 		verifyStockData(stocksSet);
 		analyzeStockData(stocksSet);
 		getDataForAllSymbols(stocksSet);
 	}
 
-	private static void readStockMetaData(Set<Stock> stocksSet) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public static void getDataForSingleSymbol(String symbol) throws Exception {
-		Set<Stock> stocksSet = new HashSet<>();
+		Set<Stock> stocksSet = new TreeSet<>();
 		stocksSet.add(new Stock(symbol));
 		downloadStockData(stocksSet);
 		verifyStockData(stocksSet);
@@ -146,7 +119,7 @@ public class StockDataReader {
 		URLUtils.log("------------------------------");
 		URLUtils.log("Starting stocks data analysis");
 		Counter.initCounter(stockSet.size());
-		stockSet.stream().sorted().forEach(s -> {
+		stockSet.stream().forEach(s -> {
 			Counter.getCounter().currentIncrease();
 			StockDataReader.analyzeStockData(s);
 			URLUtils.log("");
@@ -170,16 +143,13 @@ public class StockDataReader {
 		} catch (Exception e) {
 			stock.setError(e.getMessage());
 			failedStocks.add(stock);
-			Utils.handleException(e);
+			e.printStackTrace();
 		}
 		return stock;
 	}
 	private static synchronized Stock analyzeStockData(Stock stock) {
 		URLUtils.log("--------------Analyze stock: " + stock);
 		try {
-			stock.setHi3y(URLUtils.readDataBetween(stock, "High/Low=", "="));
-			stock.setName(URLUtils.readDataBetween(stock, "name=", "="));
-			stock.setCmp(URLUtils.readDataBetween(stock, "CurrentPrice=", "="));
 			stock.setFaceValue(URLUtils.extractNumber(URLUtils.readTag(stock, "FaceValue")));
 			stock.setBseSymbol(URLUtils.readDataBetween(stock, "BSE:", "="));
 			stock.setNseSymbol(URLUtils.readDataBetween(stock, "NSE:", "="));
@@ -209,7 +179,7 @@ public class StockDataReader {
 
 			URLUtils.log(stock.getCSV());
 		} catch (Exception e) {
-			Utils.handleException(e);
+			e.printStackTrace();
 		}
 		return stock;
 	}
@@ -219,7 +189,7 @@ public class StockDataReader {
 		URLUtils.log("Starting verification of stocks data");
 		Set<Stock> filteredSet = stocksSet.stream().filter(URLUtils::notExists).sorted().collect(Collectors.toSet());
 		Counter.initCounter(filteredSet.size());
-		filteredSet.stream().sorted().forEach(s -> {
+		filteredSet.stream().forEach(s -> {
 			URLUtils.log("-");
 			Counter.getCounter().currentIncrease();
 			StockDataReader.verifyStockData(s);
@@ -246,22 +216,20 @@ public class StockDataReader {
 		}
 	}
 
-	private static void downloadStockData(Set<Stock> symbolsSet) {
+	private static synchronized void downloadStockData(Set<Stock> symbolsSet) {
 		URLUtils.log("------------------------------");
 		Counter.initCounter(symbolsSet.size());
-		symbolsSet.stream().filter(Objects::nonNull).filter(p -> Boolean.valueOf(update)).sorted().forEach(s -> {
+		symbolsSet.stream().filter(Objects::nonNull).filter(p -> Boolean.valueOf(update)).forEach(s -> {
 			Counter.getCounter().currentIncrease();			
+			s.setForceUpdate(forceUpdate);
+			checkForceUpdate(s);
 			URLUtils.log("");
-			if(URLUtils.underProcess(s)) {
-				URLUtils.log("Stock is already under process...: " + s);
-			} else {
-				StockDataReader.downloadStockData(s, update);
-			}
+			StockDataReader.downloadStockData(s, update);
 		});
 		URLUtils.log("------------------------------");
 	}
 
-	public static void checkForceUpdate(Stock stock) {
+	private static void checkForceUpdate(Stock stock) {
 		if(updateDays >= 0) {
 			boolean needsUpdate = URLUtils.needsUpdate(stock, updateDays);
 			stock.setForceUpdate(needsUpdate);
@@ -272,24 +240,19 @@ public class StockDataReader {
 		try {
 			URLUtils.getStockHtml(stock, update, sleep);
 		} catch (Exception e) {
-			Utils.handleException(e);
+			e.printStackTrace();
 		}
 	}
 
 	private static synchronized Set<Stock> getStockSymbols() throws Exception {
-		Set<String> readSymbols = URLUtils.readSymbols(inFile);
-		Set<Stock> symbolsSet = readSymbols.stream().map(Utils::trimToNull).filter(Objects::nonNull).map(Stock::new).sorted()
+		SortedSet<String> readSymbols = URLUtils.readSymbols(inFile);
+		Set<Stock> stocksSet = readSymbols.stream().map(Utils::trimToNull).filter(Objects::nonNull).map(Stock::new).sorted()
 				.collect(Collectors.toSet());
-		
-		symbolsSet.stream().filter(Objects::nonNull).filter(p -> Boolean.valueOf(update)).sorted().forEach(s -> {
-			s.setForceUpdate(forceUpdate);
-			s.setDaysToUpdate(updateDays);
-		});
-		return symbolsSet;
+		return stocksSet;
 	}
 
 	private static void getDataForSingleSymbol(Set<Stock> stocksSet, String symbol) throws Exception {
-		String data = stocksSet.stream().filter(p -> p.getSymbol().equalsIgnoreCase(symbol))
+		String data = stocksSet.stream().filter(p -> p.getSymbol().equalsIgnoreCase(symbol)).sorted()
 				.map(s -> s.getCSV()).collect(Collectors.joining("\n"));
 		data = Stock.getCSVHeader() + data;
 		URLUtils.log(data);

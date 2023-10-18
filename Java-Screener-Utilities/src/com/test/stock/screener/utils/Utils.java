@@ -1,4 +1,4 @@
-package com.test.stock.utils;
+package com.test.stock.screener.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,19 +7,33 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.openqa.selenium.logging.Logs;
+import com.test.stock.screener.meta.Constants;
+import com.test.stock.screener.meta.MultiValueMap;
+import com.test.stock.screener.meta.Stock;
 
-public class Utils {
+public class Utils implements Constants {
+	private static Random RANDOM = new Random();
+	private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	public static String formatDate(Date date) {
+		return formatter.format(date);
+	}
 
 	public static void shutdownAndAwaitTermination(ExecutorService pool) {
 		if (pool != null) {
@@ -112,6 +126,14 @@ public class Utils {
 		}
 	}
 
+	public static String getFullDataFromFile(String dataFile) throws IOException {
+		StringBuffer buff = new StringBuffer();
+		try (Stream<String> stream = Files.lines(Paths.get(dataFile))) {
+			stream.filter(Objects::nonNull).map(s -> s.trim()).filter(Utils::isNotEmpty).forEach(buff::append);
+		}
+		return buff.toString();
+	}
+
 	public static String toIntDefault(String st) {
 		return isEmpty(st) ? "0" : st.trim();
 	}
@@ -155,7 +177,7 @@ public class Utils {
 
 	public static double minDouble(double... dob) {
 		try {
-			return Arrays.stream(dob).filter(d->d>0).min().orElse(0);
+			return Arrays.stream(dob).filter(d -> d > 0).min().orElse(0);
 		} catch (NumberFormatException e) {
 			return 0;
 		}
@@ -280,6 +302,7 @@ public class Utils {
 		stream.close();
 		return data;
 	}
+
 	public static void copyFile(File soureFile, File targetFile) {
 		try {
 			Path sourePath = soureFile.toPath();
@@ -292,29 +315,118 @@ public class Utils {
 		}
 	}
 
-	public static String substring (String str, int length) {
+	public static String substring(String str, int length) {
 		try {
-			if(str != null) {
+			if (str != null) {
 				int length2 = str.length();
-				if(length2>length) {
+				if (length2 > length) {
 					str = str.substring(0, length);
 				}
 			}
 		} catch (Exception e) {
 			handleException(e);
 		}
-		return str;
+		return trimToEmpty(str);
 	}
-	
+
+	public static void sleepRandomly() {
+		sleepRandomly(10);
+	}
+
+	public static void sleepRandomly(int max) {
+		try {
+			int sleepTime = 1000 * RANDOM.nextInt(max);
+			sleepTime = sleepTime > 0 ? sleepTime : 5000;
+			log("Sleeping for {} ms", sleepTime);
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			handleException(e);
+		}
+	}
+
 	public static void handleException(Exception ex) {
 		ex.printStackTrace();
-		System.exit(0);
 	}
-	public static void log(String logString, Object... args) {
+
+	public static String logError(String logString, Object... args) {
+		return log(LOG_ERROR + logString, args);
+	}
+
+	public static String log(String logString) {
+		return log(logString, "");
+	}
+
+	public static String log(String logString, Object... args) {
 		if (logString != null) {
 			logString = logString.replace("{}", "%s");
 			String str = String.format(logString, args);
 			System.out.println(str);
+			return str;
 		}
+		return "";
+	}
+
+	public static String getCacheFileName(Stock stock) {
+		return DIR_CACHE + stock.getSymbol() + ".html";
+	}
+
+	public static String getTempFileName(Stock stock) {
+		return DIR_SER_CACHE + stock.getSymbol() + ".ser";
+	}
+
+	public static String getCacheRawFileName(Stock stock) {
+		return DIR_RAW_CACHE + stock.getSymbol() + "_raw.html";
+	}
+
+	public static boolean isCacheFileExists(Stock stock) {
+		Path path = Paths.get(getCacheFileName(stock));
+		return Files.exists(path);
+	}
+	
+	public static <T> List<T> ensureList(List<T> list) {
+		return list == null ? new ArrayList<>() : list;
+	}
+
+	public static <S, J> Map<S, J> toMap(Collection<J> list, Function<J, S> mapper) {
+		return list.stream().collect(Collectors.toMap(mapper, Function.identity()));
+	}
+
+	public static <T> void printCollection(Collection<T> collection, String message) {
+		if (!collection.isEmpty()) {
+			System.out.println(message);
+			collection.stream().forEach(System.out::println);
+		}
+	}
+
+	public static void ensureFolder(String folderName) {
+		try {
+			Files.createDirectories(Paths.get(folderName));
+			System.out.println("Directory present: " + Paths.get(folderName));
+		} catch (Exception e) {
+			Utils.handleException(e);
+		}
+	}
+
+	public static void ensureFile(String fileName) {
+		try {
+			Path path = Paths.get(fileName);
+			if (!Files.exists(path)) {
+				Files.createFile(Paths.get(fileName));
+			}
+			System.out.println("File Path present: " + path);
+		} catch (Exception e) {
+			Utils.handleException(e);
+		}
+	}
+
+	public static String constructMedianPEURL(Stock stock) {
+		StringBuffer medianPEURL = new StringBuffer("");
+		medianPEURL.append(URL_API);
+		medianPEURL.append(stock.getCompanyId());
+		medianPEURL.append(SUFFIX_MEDIAN_PE);
+		if (stock.isConsolidated()) {
+			medianPEURL.append(SUFFIX_CONSOLIDATED);
+		}
+		return medianPEURL.toString();
 	}
 }

@@ -1,4 +1,4 @@
-package com.test.stock.utils;
+package com.test.stock.screener.meta;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,15 +1,16 @@
-package com.test.stock;
+package com.test.stock.screener.meta;
 
 import java.util.Comparator;
 
-import com.test.stock.utils.URLUtils;
-import com.test.stock.utils.Utils;
+import com.test.stock.screener.utils.Utils;
 
 public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	boolean consolidated;
-	boolean forceUpdate;
-	int daysToUpdate = 10;
-	int companyId;
+	boolean downloadFailed;
+	boolean cached;
+	int daysToUpdate = 5;
+	JsonStock jsonStock;
+	
 	String symbol = "";
 	String bseSymbol = "";
 	String nseSymbol = "";
@@ -33,11 +34,9 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	String name = "";
 	String hi3y = "";
 	String cmp = "";
-	String processFile = "";
 
 	public Stock(String symbol) {
 		this.symbol = trim(symbol);
-		this.processFile = this.symbol +".cer";
 	}
 
 	public String getCSV() {
@@ -191,8 +190,7 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	@Override
 	public int compare(Stock o1, Stock o2) {
-		return URLUtils.random.nextInt(10);
-		//return o2.getSymbol().compareTo(o1.getSymbol());
+		return o2.getSymbol().compareTo(o1.getSymbol());
 	}
 
 	@Override
@@ -294,19 +292,11 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	}
 
 	public boolean isConsolidated() {
-		return consolidated;
-	}
-
-	public void setConsolidated(boolean consolidated) {
-		this.consolidated = consolidated;
+		return jsonStock.getUrl().indexOf("consolidated") > 0;
 	}
 
 	public int getCompanyId() {
-		return companyId;
-	}
-
-	public void setCompanyId(int companyId) {
-		this.companyId = companyId;
+		return jsonStock.getId();
 	}
 
 	public String getMedianPE() {
@@ -325,14 +315,6 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		this.error = error;
 	}
 
-	public boolean isForceUpdate() {
-		return forceUpdate;
-	}
-
-	public void setForceUpdate(boolean forceUpdate) {
-		this.forceUpdate = forceUpdate;
-	}
-
 	public int getDaysToUpdate() {
 		return daysToUpdate;
 	}
@@ -346,7 +328,7 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.name = Utils.substring(name, 19);
 	}
 
 	public String getHi3y() {
@@ -364,8 +346,41 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	public void setCmp(String cmp) {
 		this.cmp = cmp;
 	}
-	public String getProcessFile() {
-		return processFile;
+
+	public String getCompanyName() {
+		return Utils.substring(jsonStock.getName(), 19);
+	}
+
+	public String getCompanyURL() {
+		return jsonStock.getUrl();
+	}
+
+	public String getMedianPEURL() {
+		return jsonStock.getMedianPEURL();
+	}
+
+	public JsonStock getJsonStock() {
+		return jsonStock;
+	}
+
+	public void setJsonStock(JsonStock jsonStock) {
+		this.jsonStock = jsonStock;
+	}
+
+	public boolean isDownloadFailed() {
+		return downloadFailed;
+	}
+
+	public void setDownloadFailed(boolean downloadFailed) {
+		this.downloadFailed = downloadFailed;
+	}
+
+	public boolean isCached() {
+		return cached;
+	}
+
+	public void setCached(boolean cached) {
+		this.cached = cached;
 	}
 
 }

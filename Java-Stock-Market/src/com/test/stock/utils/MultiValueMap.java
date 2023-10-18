@@ -36,7 +36,6 @@ public class MultiValueMap<K, V> {
 		return entries;
 	}
 
-	@SuppressWarnings("hiding")
 	public class Entry<K, V> {
 		K key;
 		V value;

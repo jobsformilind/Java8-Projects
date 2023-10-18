@@ -1,4 +1,4 @@
-package com.test.stock.utils;
+package com.test.stock.screener;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,14 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.openqa.selenium.logging.Logs;
-
-public class Utils {
+public class ScreenerUtils implements Constants {
+	static Random RANDOM = new Random();
 
 	public static void shutdownAndAwaitTermination(ExecutorService pool) {
 		if (pool != null) {
@@ -107,9 +107,18 @@ public class Utils {
 
 	public static List<String> getDataFromFile(String dataFile) throws IOException {
 		try (Stream<String> stream = Files.lines(Paths.get(dataFile))) {
-			return stream.filter(Objects::nonNull).map(s -> s.trim()).filter(Utils::isNotEmpty)
+			return stream.filter(Objects::nonNull).map(s -> s.trim()).filter(ScreenerUtils::isNotEmpty)
 					.collect(Collectors.toList());
 		}
+	}
+	
+	public static String getFullDataFromFile(String dataFile) throws IOException {
+		StringBuffer buff = new StringBuffer();
+		try (Stream<String> stream = Files.lines(Paths.get(dataFile))) {
+			 stream.filter(Objects::nonNull).map(s -> s.trim()).filter(ScreenerUtils::isNotEmpty)
+					.forEach(buff::append);
+		}
+		return buff.toString();
 	}
 
 	public static String toIntDefault(String st) {
@@ -174,7 +183,7 @@ public class Utils {
 	}
 
 	public static String getStocksHomeDir() {
-		return Utils.getRequiredSystemProperty("MY_STOCKS_HOME") + "\\";
+		return ScreenerUtils.getRequiredSystemProperty("MY_STOCKS_HOME") + "\\";
 	}
 
 	public static int extractNumber(String data) {
@@ -238,7 +247,7 @@ public class Utils {
 		List<File> filesList = Files.walk(Paths.get(directory), 1).filter(Files::isRegularFile).map(Path::toFile)
 				.filter(f -> f.getName().endsWith(extn)).collect(Collectors.toList());
 		for (File file : filesList) {
-			filesMap.put(Utils.getFileName(file.getName(), extn), file);
+			filesMap.put(ScreenerUtils.getFileName(file.getName(), extn), file);
 		}
 		return filesMap;
 	}
@@ -252,13 +261,13 @@ public class Utils {
 	public static Map<String, String> readData(String dataFile) throws Exception {
 		Map<String, String> data = new HashMap<>();
 		Stream<String> stream = Files.lines(Paths.get(dataFile));
-		stream.filter(Objects::nonNull).filter(Utils::notCommented).forEach(line -> {
+		stream.filter(Objects::nonNull).filter(ScreenerUtils::notCommented).forEach(line -> {
 			if (line.indexOf("=") > 0) {
 				String[] split = line.split("=");
-				data.put(Utils.trimToEmpty(split[0]), Utils.trimToEmpty(split[1]));
+				data.put(ScreenerUtils.trimToEmpty(split[0]), ScreenerUtils.trimToEmpty(split[1]));
 			} else if (line.indexOf(",") > 0) {
 				String[] split = line.split(",");
-				data.put(Utils.trimToEmpty(split[0]), Utils.trimToEmpty(split[1]));
+				data.put(ScreenerUtils.trimToEmpty(split[0]), ScreenerUtils.trimToEmpty(split[1]));
 			}
 		});
 		stream.close();
@@ -268,13 +277,13 @@ public class Utils {
 	public static MultiValueMap<String, String> readDuplicateData(String dataFile) throws Exception {
 		MultiValueMap<String, String> data = new MultiValueMap<>();
 		Stream<String> stream = Files.lines(Paths.get(dataFile));
-		stream.filter(Objects::nonNull).filter(Utils::notCommented).forEach(line -> {
+		stream.filter(Objects::nonNull).filter(ScreenerUtils::notCommented).forEach(line -> {
 			if (line.indexOf("=") > 0) {
 				String[] split = line.split("=");
-				data.put(Utils.trimToEmpty(split[0]), Utils.trimToEmpty(split[1]));
+				data.put(ScreenerUtils.trimToEmpty(split[0]), ScreenerUtils.trimToEmpty(split[1]));
 			} else if (line.indexOf(",") > 0) {
 				String[] split = line.split(",");
-				data.put(Utils.trimToEmpty(split[0]), Utils.trimToEmpty(split[1]));
+				data.put(ScreenerUtils.trimToEmpty(split[0]), ScreenerUtils.trimToEmpty(split[1]));
 			}
 		});
 		stream.close();
@@ -305,16 +314,48 @@ public class Utils {
 		}
 		return str;
 	}
-	
+
+	public static void sleepRandomly() {
+		sleepRandomly(10);
+	}
+	public static void sleepRandomly(int max) {
+		try {
+			int sleepTime = 1000 * RANDOM.nextInt(max);
+			sleepTime = sleepTime > 0 ? sleepTime : 5000;
+			log("Sleeping for {} ms", sleepTime);
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			handleException(e);
+		}
+	}
+
 	public static void handleException(Exception ex) {
 		ex.printStackTrace();
-		System.exit(0);
 	}
-	public static void log(String logString, Object... args) {
+	
+	public static String logError(String logString, Object... args) {
+		return log(LOG_ERROR +  logString, args);
+	}
+	public static String log(String logString) {
+		return log(logString, "");
+	}
+
+	public static String log(String logString, Object... args) {
 		if (logString != null) {
 			logString = logString.replace("{}", "%s");
 			String str = String.format(logString, args);
 			System.out.println(str);
+			return str;
 		}
+		return "";
 	}
+	public static String getCacheFileName(Stock stock) {
+		return DIR_CACHE + stock.getSymbol() + ".html";
+	}	
+	public static String getCacheSerFileName(Stock stock) {
+		return DIR_SER_CACHE + stock.getProcessFile();
+	}	
+	public static String getCacheRawFileName(Stock stock) {
+		return DIR_RAW_CACHE + stock.getSymbol() + ".html";
+	}	
 }

@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,14 +13,11 @@ import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Scanner;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import com.google.gson.Gson;
@@ -41,18 +36,7 @@ public class URLUtils {
 	private static String rawcacheFolder = cacheFolder + "rawcache\\";
 	private static String logFileName = Utils.getStocksHomeDir() + "\\out.log";
 	public static Gson gson = new Gson();
-	public static Random random = new Random();
-	private static Type clazz = new TypeToken<ArrayList<JsonStock>>() {
-	}.getType();
-	private static Map<String, String> searchURLMap = new HashMap<>();
-
-	static {
-		searchURLMap.put("NAM-INDIA", "Nippon+Life+India+Asset");
-		searchURLMap.put("MCDOWELL-N", "United+Spirits");
-		searchURLMap.put("BAJAJ-AUTO", "BAJAJ+AUTO");
-		searchURLMap.put("M&MFIN", "M%26MFIN");
-		searchURLMap.put("JSWINFRA", "JSW+Infrastructure");
-	}
+	private static Type clazz = new TypeToken<ArrayList<JsonStock>>(){}.getType();
 
 	public static String readTag(Stock stock, String tag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
@@ -78,15 +62,14 @@ public class URLUtils {
 		log(stock + ": " + tagValue);
 		return tagValue.toString();
 	}
-
-	public static String readDataBetweenAfterIndex(Stock stock, String preTag, String stratTag, String endTag)
-			throws Exception {
+	
+	public static String readDataBetweenAfterIndex(Stock stock, String preTag, String stratTag, String endTag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
 		Stream<String> stream = URLUtils.getStockData(stock);
 		stream.forEach(line -> {
-			if (line != null && line.indexOf(preTag) > 0) {
+			if(line != null && line.indexOf(preTag)>0) {
 				int preTagEnd = line.indexOf(preTag) + preTag.length();
-				String dataBetween = readDataBetween(stock, line, preTagEnd, stratTag, endTag);
+				String dataBetween = readDataBetween(stock, line, preTagEnd, stratTag, endTag);				
 				tagValue.append(readDataBetweenUsingEndTag(stock, dataBetween, stratTag, endTag));
 			}
 		});
@@ -94,13 +77,12 @@ public class URLUtils {
 		log(stock + ": " + tagValue);
 		return tagValue.toString();
 	}
-
+	
 	public static String readDataFromStart(Stock stock, String stratTag, String endTag) throws Exception {
 		return readDataFromStart(stock, null, stratTag, endTag);
 	}
 
-	public static String readDataFromStart(Stock stock, String indexTag, String startTag, String endTag)
-			throws Exception {
+	public static String readDataFromStart(Stock stock, String indexTag, String startTag, String endTag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
 		try (Stream<String> stream = URLUtils.getStockData(stock)) {
 			stream.filter(Objects::nonNull).forEach(line -> {
@@ -112,7 +94,7 @@ public class URLUtils {
 		log(stock + ": " + startTag + ": " + tagValue);
 		return tagValue.toString();
 	}
-
+	
 	public static String readDataFromEnd(Stock stock, String startTag, String endTag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
 		try (Stream<String> stream = URLUtils.getStockData(stock)) {
@@ -124,7 +106,7 @@ public class URLUtils {
 		log(stock + ": " + startTag + ": " + tagValue);
 		return tagValue.toString();
 	}
-
+	
 	public static String readDataBetweenUsingEndTag(Stock stock, String stratTag, String endTag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
 		try (Stream<String> stream = URLUtils.getStockData(stock)) {
@@ -144,8 +126,7 @@ public class URLUtils {
 			stock.setCagr5(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:", "%")));
 			stock.setCagr10(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:", "%")));
 			stock.setCagrAvg(average(stock.getCagr1(), stock.getCagr3(), stock.getCagr5(), stock.getCagr10()));
-			// stock.setCagrAvg35(average35(stock.getCagr1(), stock.getCagr3(),
-			// stock.getCagr5()));
+			//stock.setCagrAvg35(average35(stock.getCagr1(), stock.getCagr3(), stock.getCagr5()));
 
 		}
 	}
@@ -153,35 +134,24 @@ public class URLUtils {
 	public static void parseROE(Stock stock, String data) {
 		if (data != null && data.length() > 3) {
 			// 10Years:40%5Years:38%3Years:42%LastYear:43%
-			// stock.setRoe1(readDataBetweenDoubly(stock, data, "LastYear:=", "LastYear:",
-			// "%"));
-			// stock.setRoe3(readDataBetweenDoubly(stock, data, "3Years:=", "3Years:",
-			// "%"));
-			// stock.setRoe5(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:",
-			// "%"));
-			// stock.setRoe10(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:",
-			// "%"));
-			// stock.setRoeAvg(average(stock.getRoe1(), stock.getRoe3(), stock.getRoe5(),
-			// stock.getRoe10()));
-			// stock.setRoeAvg35(average35(stock.getRoe1(), stock.getRoe3(),
-			// stock.getRoe5()));
+			//stock.setRoe1(readDataBetweenDoubly(stock, data, "LastYear:=", "LastYear:", "%"));
+			//stock.setRoe3(readDataBetweenDoubly(stock, data, "3Years:=", "3Years:", "%"));
+			//stock.setRoe5(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:", "%"));
+			//stock.setRoe10(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:", "%"));
+			//stock.setRoeAvg(average(stock.getRoe1(), stock.getRoe3(), stock.getRoe5(), stock.getRoe10()));
+			//stock.setRoeAvg35(average35(stock.getRoe1(), stock.getRoe3(), stock.getRoe5()));
 		}
 	}
 
 	public static void parseProfit(Stock stock, String data) {
 		if (data != null && data.length() > 3) {
 			// 10Years:16%5Years:7%3Years:8%TTM:-4%
-			// stock.setProfit1(readDataBetweenDoubly(stock, data, "TTM:=", "TTM:", "%"));
-			// stock.setProfit3(readDataBetweenDoubly(stock, data, "3Years:=", "3Years:",
-			// "%"));
-			// stock.setProfit5(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:",
-			// "%"));
-			// stock.setProfit10(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:",
-			// "%"));
-			// stock.setProfitAvg(average(stock.getProfit1(), stock.getProfit3(),
-			// stock.getProfit5(), stock.getProfit10()));
-			// stock.setProfitAvg35(average35(stock.getProfit1(), stock.getProfit3(),
-			// stock.getProfit5()));
+			//stock.setProfit1(readDataBetweenDoubly(stock, data, "TTM:=", "TTM:", "%"));
+			//stock.setProfit3(readDataBetweenDoubly(stock, data, "3Years:=", "3Years:", "%"));
+			//stock.setProfit5(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:", "%"));
+			//stock.setProfit10(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:", "%"));
+			//stock.setProfitAvg(average(stock.getProfit1(), stock.getProfit3(), stock.getProfit5(), stock.getProfit10()));
+			//stock.setProfitAvg35(average35(stock.getProfit1(), stock.getProfit3(), stock.getProfit5()));
 		}
 	}
 
@@ -194,8 +164,7 @@ public class URLUtils {
 			stock.setSale5(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:", "%")));
 			stock.setSale10(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:", "%")));
 			stock.setSaleAvg(average(stock.getSale1(), stock.getSale3(), stock.getSale5(), stock.getSale10()));
-			// stock.setSaleAvg35(average35(stock.getSale1(), stock.getSale3(),
-			// stock.getSale5()));
+			//stock.setSaleAvg35(average35(stock.getSale1(), stock.getSale3(), stock.getSale5()));
 		}
 	}
 
@@ -236,7 +205,6 @@ public class URLUtils {
 		log("Extracted Data: " + retValue);
 		return Utils.trimToEmpty(retValue);
 	}
-
 	private static String readDataBetween(Stock stock, String data, int startPos, String stratTag, String endTag) {
 		String retValue = "";
 		if (data != null && data.indexOf(stratTag) > -1) {
@@ -247,7 +215,7 @@ public class URLUtils {
 		log(stock + ": " + stratTag + ": " + retValue);
 		return Utils.trimToEmpty(retValue);
 	}
-
+	
 	private static String readDataFromStart(String line, int indexTagStart, String stratTag, String endTag) {
 		String retValue = "";
 		if (line != null && line.indexOf(stratTag) > -1) {
@@ -257,63 +225,62 @@ public class URLUtils {
 		}
 		return Utils.trimToEmpty(retValue);
 	}
-
+	
 	private static String readDataFromEnd(String line, String stratTag, String endTag) {
 		String retValue = "";
 		try {
 			if (line != null && line.indexOf(endTag) > 0) {
 				int end = line.indexOf(endTag) + endTag.length();
-				int start = line.lastIndexOf(stratTag, end - 1);
+				int start = line.lastIndexOf(stratTag, end-1);
 				retValue = line.substring(start, end);
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			e.printStackTrace();
 		}
 		return Utils.trimToEmpty(retValue);
 	}
-
+	
 	public static String readDataBetweenUsingEndTag(String data, String stratTag, String endTag) {
 		String retValue = "";
 		try {
 			if (data != null && data.indexOf(endTag) > -1) {
 				int end = data.indexOf(endTag);
-				int start = data.lastIndexOf(stratTag, end - 1);
-				double ttmValue = Utils.toDouble(data.substring(start + 1, end));
+				int start = data.lastIndexOf(stratTag, end-1);
+				double ttmValue = Utils.toDouble(data.substring(start+1, end));
 
 				end = start;
-				start = data.lastIndexOf(stratTag, end - 1);
-				double preValue = Utils.toDouble(data.substring(start + 1, end));
-
+				start = data.lastIndexOf(stratTag, end-1);
+				double preValue = Utils.toDouble(data.substring(start+1, end));
+				
 				retValue = Double.valueOf(Utils.minDouble(ttmValue, preValue)).toString();
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			e.printStackTrace();
 		}
 		log("Extracted Data: " + retValue);
 		return Utils.trimToEmpty(retValue);
 	}
-
 	private static String readDataBetweenUsingEndTag(Stock stock, String data, String stratTag, String endTag) {
 		String retValue = "";
 		try {
 			if (data != null && data.indexOf(endTag) > -1) {
 				int end = data.indexOf(endTag);
-				int start = data.lastIndexOf(stratTag, end - 1);
-				String ttmValue = data.substring(start + 1, end);
-				if (Utils.isNotEmpty(ttmValue)) {
+				int start = data.lastIndexOf(stratTag, end-1);
+				String ttmValue = data.substring(start+1, end);
+				if(Utils.isNotEmpty(ttmValue)) {
 					end = start;
-					start = data.lastIndexOf(stratTag, end - 1);
-					retValue = data.substring(start + 1, end);
-					if (Utils.isNotDouble(retValue)) {
+					start = data.lastIndexOf(stratTag, end-1);
+					retValue = data.substring(start+1, end);
+					if(Utils.isNotDouble(retValue)) {
 						retValue = ttmValue;
 					}
-				}
-				if (Utils.isNotDouble(retValue)) {
+				} 
+				if(Utils.isNotDouble(retValue)) {
 					retValue = "0";
 				}
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			e.printStackTrace();
 		}
 		return Utils.trimToEmpty(retValue);
 	}
@@ -324,7 +291,7 @@ public class URLUtils {
 			Path path = Paths.get(fileName);
 			return Files.lines(path, Charset.forName("UTF-8"));
 		} catch (Exception e) {
-			Utils.handleException(e);
+			e.printStackTrace();
 		}
 		return Stream.empty();
 	}
@@ -338,36 +305,29 @@ public class URLUtils {
 			String fileName = cacheFolder + stock + ".html";
 			return Files.exists(Paths.get(fileName));
 		} catch (Exception e) {
-			Utils.handleException(e);
+			// Dont handle
 		}
 		return false;
 	}
 
-	public static synchronized boolean needsUpdate(Stock stock) {
+	public static boolean needsUpdate(Stock stock) {
 		return needsUpdate(stock, stock.getDaysToUpdate());
 	}
 
-	public static synchronized boolean needsUpdate(Stock stock, int days) {
-		if (stock.isForceUpdate()) {
-			log("Force Update stock data.." + stock);
+	public static boolean needsUpdate(Stock stock, int days) {
+		if(stock.isForceUpdate()) {
 			return true;
 		}
 		try {
-			log("Checking needsUpdate stock data for days: " + days);
 			String fileName = cacheFolder + stock + ".html";
-			Path path = Paths.get(fileName);
-			if (Files.exists(path)) {
-				FileTime lastModifiedTime = Files.getLastModifiedTime(path);
-				long modified = lastModifiedTime.toInstant().getEpochSecond();
-				long now = Instant.now().getEpochSecond();
-				long diff = now - modified;
-				long day = days * 24 * 60 * 60;
-				boolean needsUpdate = (day - diff) < 0;
-				log("needsUpdate : " + needsUpdate);
-				return needsUpdate;
-			}
+			FileTime lastModifiedTime = Files.getLastModifiedTime(Paths.get(fileName));
+			long modified = lastModifiedTime.toInstant().getEpochSecond();
+			long now = Instant.now().getEpochSecond();
+			long diff = now - modified;
+			long day = days * 24 * 60 * 60;
+			return (day - diff) < 0;
 		} catch (Exception e) {
-			Utils.handleException(e);
+			// Dont handle
 		}
 		return true;
 	}
@@ -384,68 +344,59 @@ public class URLUtils {
 		writeHTML(stock, url, fileName, update, 5000);
 	}
 
-	public static synchronized void writeHTML(Stock stock, String url, String fileName, boolean update, long sleep)
+	public static void writeHTML(Stock stock, String url, String fileName, boolean update, long sleep)
 			throws Exception {
 		if (!update) {
 			return;
 		}
 		boolean needsUpdate = needsUpdate(stock);
+		log("Downloading data for:{ " + Counter.getCounter() + " }: " + stock);
 		if (needsUpdate) {
-			log("Downloading data for:{ " + Counter.getCounter() + " }: " + stock);
+			Thread.sleep(5000);
 			boolean exists = exists(stock);
 			url = getUrl(stock, url);
 			log("update: " + update + ", File exists: " + exists);
 			String str = downlaodData(stock, url);
 			writeFile(stock, fileName, str);
 			log("Data downloaded for: " + stock);
-			int sleepTime = 1000 * URLUtils.random.nextInt(10);
-			sleepTime = sleepTime > 1 ? sleepTime : 5000;
-			log("Sleeping for: " + sleepTime);
-			Thread.sleep(sleepTime);
 		} else {
 			log("Updated data already exists for : " + stock);
 		}
 	}
-
+	
 	private static String getUrl(Stock stock, String url) {
 		try {
-			String searchUrl = searchURL + replaceSymbolHash(stock.getSymbol());
+			String searchUrl = searchURL + stock.getSymbol();			
 			String data = downlaodUnparsedData(searchUrl).toString();
-			if (data != null && data.startsWith("[")) {
+			if(data != null && data.startsWith("[")) {
 				List<JsonStock> jsonData = gson.fromJson(data, clazz);
-				if (jsonData != null) {
+				if(jsonData != null) {
 					String symbol = "/" + stock.getSymbol() + "/";
-					JsonStock jsonStock = jsonData.stream().filter(s -> (s.getUrl().indexOf(symbol) > 0)).findAny()
-							.orElse(null);
-					if (jsonStock == null && !jsonData.isEmpty()) {
+					JsonStock jsonStock = jsonData.stream().filter(s->(s.getUrl().indexOf(symbol)>0)).findAny().orElse(null);
+					if(jsonStock == null && !jsonData.isEmpty()) {
 						jsonStock = jsonData.get(0);
 					}
-					if (jsonStock != null) {
+					if(jsonStock != null) {
 						url = baseURL + jsonStock.getUrl();
-						stock.setConsolidated(jsonStock.getUrl().indexOf("consolidated") > 0);
+						stock.setConsolidated(jsonStock.getUrl().indexOf("consolidated")>0);
 						stock.setCompanyId(jsonStock.getId());
-						stock.setName(Utils.substring(jsonStock.getName(), 19));
 					}
 				}
 			}
-		} catch (Exception e) {
-			Utils.handleException(e);
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
 		return url;
 	}
 
 	public static void writeFile(Stock stock, String fileName, String str) throws Exception {
 		ensureCacheFolder();
-		if (Utils.isNotEmpty(str)) {
-			writeFile(rawcacheFolder + stock + ".html", str);
-			str = normalizeData(str);
-			if (Utils.isNotEmpty(str)) {
-				str = "name=" + stock.getName() + "=" + str;
-				writeFile(fileName, str);
-			}
-		}
+		writeFile(rawcacheFolder + stock + ".html", str);
+		str = normalizeData(str);
+		writeFile(fileName, str);
 	}
 
+	
 	public static String downlaodData(Stock stock, String url) {
 		StringBuffer buff = new StringBuffer("");
 		buff.append(downlaodUnparsedData(url));
@@ -455,13 +406,13 @@ public class URLUtils {
 
 	private static StringBuffer downlaodMedianPEData(Stock stock) {
 		StringBuffer buff = new StringBuffer("");
-		if (stock.getCompanyId() > 0) {
+		if(stock.getCompanyId()>0) {
 			StringBuffer medianPEURL = new StringBuffer("");
 			medianPEURL.append(apiURL);
 			medianPEURL.append(stock.getCompanyId());
 			medianPEURL.append(medianPESuffix);
-			if (stock.isConsolidated()) {
-				medianPEURL.append(consolidatedSuffix);
+			if(stock.isConsolidated()) {
+				medianPEURL.append(consolidatedSuffix);	
 			}
 			buff.append(downlaodUnparsedData(medianPEURL.toString()));
 		}
@@ -474,11 +425,11 @@ public class URLUtils {
 			log("Download: " + url);
 			try (Scanner scanner = new Scanner(new URL(url).openStream())) {
 				while (scanner.hasNext()) {
-					buff.append(scanner.nextLine());
+					buff.append(scanner.next());
 				}
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			log("Got exception while downloaing data : " + url);
 		}
 		return buff;
 	}
@@ -493,7 +444,7 @@ public class URLUtils {
 		str = str.replaceAll("\\u20b9", "=");
 		str = str.replaceAll("\"", "=");
 		str = str.replaceAll("==", "=");
-		str = str.replaceAll("=label", "label");
+		str = str.replaceAll("=label", "label");		
 		str = str.replaceAll("StockP/E", "StockPEarn");
 		return str;
 	}
@@ -506,7 +457,7 @@ public class URLUtils {
 		try {
 			Files.write(Paths.get(fileName), data.getBytes());
 		} catch (Exception e) {
-			Utils.handleException(e);
+			e.printStackTrace();
 		}
 	}
 
@@ -514,7 +465,7 @@ public class URLUtils {
 		try {
 			Files.createDirectories(Paths.get(rawcacheFolder));
 		} catch (Exception e) {
-			Utils.handleException(e);
+			//Ignore exception
 		}
 	}
 
@@ -522,7 +473,7 @@ public class URLUtils {
 		try {
 			return Files.lines(Paths.get(cacheFolder + fileName), Charset.forName("UTF-8"));
 		} catch (Exception e) {
-			Utils.handleException(e);
+			// Dont handle
 		}
 		return Stream.empty();
 	}
@@ -535,7 +486,7 @@ public class URLUtils {
 			char[] charArray = data.toCharArray();
 			String temp = "";
 			for (char ch : charArray) {
-
+				
 				if (Character.isDigit(ch) || ".".equals(Character.toString(ch))) {
 					temp += ch;
 				}
@@ -562,18 +513,6 @@ public class URLUtils {
 		return data;
 	}
 
-	public static String replaceSymbolHash(String str) {
-		if (str != null) {
-			String string = searchURLMap.get(str);
-			if (string != null) {
-				str = string;
-			} else {
-				str = URLEncoder.encode(str, StandardCharsets.UTF_8);
-			}
-		}
-		return str;
-	}
-
 	public static String replaceAll(String str) {
 		if (str != null) {
 			str = str.replaceAll("E-Commerce", "EComm");
@@ -584,8 +523,8 @@ public class URLUtils {
 		return str;
 	}
 
-	public static Set<String> readSymbols(String dataFile) throws Exception {
-		Set<String> symbolsSet = new HashSet<>();
+	public static SortedSet<String> readSymbols(String dataFile) throws Exception {
+		SortedSet<String> symbolsSet = new TreeSet<>();
 		Stream<String> stream = Files.lines(Paths.get(dataFile));
 		stream.forEach(line -> {
 			if (Utils.isNotEmpty(line)) {
@@ -598,7 +537,7 @@ public class URLUtils {
 
 	public static int average35(String price1, String price3, String price5) {
 		int avg = average("0", price3, price5, "0");
-		if (avg == 0) {
+		if(avg==0) {
 			avg = Utils.toInt(price1);
 		}
 		return avg;
@@ -625,11 +564,11 @@ public class URLUtils {
 
 	public static int getDivisor(int iprice1, int iprice3, int iprice5, int iprice10) {
 		int divisor = 1;
-		if (iprice10 > 0) {
+		if(iprice10>0) {
 			divisor = 10;
-		} else if (iprice5 > 0) {
+		} else if(iprice5>0) {
 			divisor = 5;
-		} else if (iprice3 > 0) {
+		} else if(iprice3>0) {
 			divisor = 3;
 		}
 		return divisor;
@@ -656,47 +595,4 @@ public class URLUtils {
 			System.out.println("Error while writing to log file : " + logFileName);
 		}
 	}
-
-	public static synchronized boolean underProcess(Stock stock) {
-		boolean isUnderProcess = false;
-		try {
-			String serFileName = cacheFolder + stock + ".ser";
-			Path path = Paths.get(serFileName);
-			File file = path.toFile();
-			if (file.exists()) {
-				isUnderProcess = true;
-				log("file exists: " + file.getAbsolutePath());
-			} else {
-				file.createNewFile();
-				log("file created: " + file.getAbsolutePath());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		log("isUnderProcess: " + isUnderProcess);
-		return isUnderProcess;
-	}
-	public static synchronized void cleanupTempFiles() {
-		try {
-			File file = new File(cacheFolder);
-			if(file.exists()) {
-				Arrays.stream(file.listFiles((f, p) -> p.endsWith(".ser"))).forEach(File::delete);
-			}
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static Set<String> readSearchMap(String searchMapFile) throws Exception {
-		Set<String> symbolsSet = new HashSet<>();
-		Stream<String> stream = Files.lines(Paths.get(searchMapFile));
-		stream.forEach(line -> {
-			if (Utils.isNotEmpty(line)) {
-				symbolsSet.add(line.trim());
-			}
-		});
-		stream.close();
-		return symbolsSet;
-	}
-	
 }

@@ -1,7 +1,6 @@
-package com.test.stock.utils;
+package com.test.stock.screener;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -10,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -20,43 +18,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.test.stock.JsonStock;
-import com.test.stock.Stock;
 
-public class URLUtils {
-	private static String medianPESuffix = "/chart/?q=Price+to+Earning-Median+PE-EPS&days=1825";
-	private static String consolidatedSuffix = "&consolidated=true";
-	private static String baseURL = "https://www.screener.in";
-	private static String url = "https://www.screener.in/company/";
-	private static String apiURL = "https://www.screener.in/api/company/";
-	private static String searchURL = "https://www.screener.in/api/company/search/?q=";
-	private static String cacheFolder = Utils.getStocksHomeDir() + "cache\\";
-	private static String rawcacheFolder = cacheFolder + "rawcache\\";
-	private static String logFileName = Utils.getStocksHomeDir() + "\\out.log";
-	public static Gson gson = new Gson();
-	public static Random random = new Random();
-	private static Type clazz = new TypeToken<ArrayList<JsonStock>>() {
-	}.getType();
-	private static Map<String, String> searchURLMap = new HashMap<>();
+public class ScreenerURLUtils implements Constants {
+	static Gson GSON =  new GsonBuilder().setPrettyPrinting().create();
+	static Type CLAZZ = new TypeToken<ArrayList<JsonStock>>() {}.getType();
+	static HashMap<String, String> searchURLMap = new HashMap<>();
 
-	static {
-		searchURLMap.put("NAM-INDIA", "Nippon+Life+India+Asset");
-		searchURLMap.put("MCDOWELL-N", "United+Spirits");
-		searchURLMap.put("BAJAJ-AUTO", "BAJAJ+AUTO");
-		searchURLMap.put("M&MFIN", "M%26MFIN");
-		searchURLMap.put("JSWINFRA", "JSW+Infrastructure");
+	public static void loadSearchURLMap(String filePath) throws Exception {
+		Map<String, String> properties = readPropertyFile(filePath);
+		searchURLMap.putAll(properties);
 	}
 
 	public static String readTag(Stock stock, String tag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
-		Stream<String> stream = URLUtils.getStockData(stock);
+		Stream<String> stream = ScreenerURLUtils.getStockData(stock);
 		stream.filter(Objects::nonNull).forEach(line -> {
 			tagValue.append(readDataBetween(stock, line, tag, "=", 1));
 		});
@@ -70,7 +53,7 @@ public class URLUtils {
 
 	public static String readDataBetween(Stock stock, String stratTag, String endTag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
-		Stream<String> stream = URLUtils.getStockData(stock);
+		Stream<String> stream = getStockData(stock);
 		stream.forEach(line -> {
 			tagValue.append(readDataBetween(stock, line, stratTag, endTag));
 		});
@@ -82,7 +65,7 @@ public class URLUtils {
 	public static String readDataBetweenAfterIndex(Stock stock, String preTag, String stratTag, String endTag)
 			throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
-		Stream<String> stream = URLUtils.getStockData(stock);
+		Stream<String> stream = getStockData(stock);
 		stream.forEach(line -> {
 			if (line != null && line.indexOf(preTag) > 0) {
 				int preTagEnd = line.indexOf(preTag) + preTag.length();
@@ -102,9 +85,9 @@ public class URLUtils {
 	public static String readDataFromStart(Stock stock, String indexTag, String startTag, String endTag)
 			throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
-		try (Stream<String> stream = URLUtils.getStockData(stock)) {
+		try (Stream<String> stream = getStockData(stock)) {
 			stream.filter(Objects::nonNull).forEach(line -> {
-				int indexTagStart = Utils.indexOfIncludingString(line, indexTag);
+				int indexTagStart = ScreenerUtils.indexOfIncludingString(line, indexTag);
 				String data = readDataFromStart(line, indexTagStart, startTag, endTag);
 				tagValue.append(data);
 			});
@@ -115,7 +98,7 @@ public class URLUtils {
 
 	public static String readDataFromEnd(Stock stock, String startTag, String endTag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
-		try (Stream<String> stream = URLUtils.getStockData(stock)) {
+		try (Stream<String> stream = getStockData(stock)) {
 			stream.filter(Objects::nonNull).forEach(line -> {
 				String data = readDataFromEnd(line, startTag, endTag);
 				tagValue.append(data);
@@ -127,7 +110,7 @@ public class URLUtils {
 
 	public static String readDataBetweenUsingEndTag(Stock stock, String stratTag, String endTag) throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
-		try (Stream<String> stream = URLUtils.getStockData(stock)) {
+		try (Stream<String> stream = getStockData(stock)) {
 			stream.forEach(line -> {
 				tagValue.append(readDataBetweenUsingEndTag(line, stratTag, endTag));
 			});
@@ -139,10 +122,10 @@ public class URLUtils {
 	public static void parseCAGR(Stock stock, String data) {
 		if (data != null && data.length() > 3) {
 			// 10Years:16%5Years:20%3Years:34%1Year:109%
-			stock.setCagr1(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "1Year:=", "1Year:", "%")));
-			stock.setCagr3(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "3Years:=", "3Years:", "%")));
-			stock.setCagr5(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:", "%")));
-			stock.setCagr10(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:", "%")));
+			stock.setCagr1(ScreenerUtils.toIntDefault(readDataBetweenDoubly(stock, data, "1Year:=", "1Year:", "%")));
+			stock.setCagr3(ScreenerUtils.toIntDefault(readDataBetweenDoubly(stock, data, "3Years:=", "3Years:", "%")));
+			stock.setCagr5(ScreenerUtils.toIntDefault(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:", "%")));
+			stock.setCagr10(ScreenerUtils.toIntDefault(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:", "%")));
 			stock.setCagrAvg(average(stock.getCagr1(), stock.getCagr3(), stock.getCagr5(), stock.getCagr10()));
 			// stock.setCagrAvg35(average35(stock.getCagr1(), stock.getCagr3(),
 			// stock.getCagr5()));
@@ -189,10 +172,10 @@ public class URLUtils {
 		if (data != null && data.length() > 3) {
 			// 10Years:16%5Years:7%3Years:8%TTM:-4%
 			// 10Years:=16%=5Years:=17%=3Years:=12%=TTM:=-8%
-			stock.setSale1(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "TTM:=", "TTM:", "%")));
-			stock.setSale3(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "3Years:=", "3Years:", "%")));
-			stock.setSale5(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:", "%")));
-			stock.setSale10(Utils.toIntDefault(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:", "%")));
+			stock.setSale1(ScreenerUtils.toIntDefault(readDataBetweenDoubly(stock, data, "TTM:=", "TTM:", "%")));
+			stock.setSale3(ScreenerUtils.toIntDefault(readDataBetweenDoubly(stock, data, "3Years:=", "3Years:", "%")));
+			stock.setSale5(ScreenerUtils.toIntDefault(readDataBetweenDoubly(stock, data, "5Years:=", "5Years:", "%")));
+			stock.setSale10(ScreenerUtils.toIntDefault(readDataBetweenDoubly(stock, data, "10Years:=", "10Years:", "%")));
 			stock.setSaleAvg(average(stock.getSale1(), stock.getSale3(), stock.getSale5(), stock.getSale10()));
 			// stock.setSaleAvg35(average35(stock.getSale1(), stock.getSale3(),
 			// stock.getSale5()));
@@ -203,12 +186,12 @@ public class URLUtils {
 			String endTag) {
 		String retVal = readDataBetween(stock, data, stratTag, endTag, 0);
 		// log("1retVal=" + retVal);
-		if (Utils.isEmpty(retVal)) {
+		if (ScreenerUtils.isEmpty(retVal)) {
 			retVal = readDataBetween(stock, data, anotherstratTag, endTag, 0);
 		}
 		// log("2retVal=" + retVal);
 		retVal = (retVal != null && retVal.equals("=") ? "" : retVal);
-		return Utils.trimToEmpty(retVal);
+		return ScreenerUtils.trimToEmpty(retVal);
 	}
 
 	private static String readDataBetween(Stock stock, String data, String stratTag, String endTag) {
@@ -223,7 +206,7 @@ public class URLUtils {
 			retValue = (data.substring(start, end));
 		}
 		log(stock + ": " + stratTag + ": " + retValue);
-		return Utils.trimToEmpty(retValue);
+		return ScreenerUtils.trimToEmpty(retValue);
 	}
 
 	public static String readDataBetween(String line, String stratTag, String endTag) {
@@ -234,7 +217,7 @@ public class URLUtils {
 			retValue = line.substring(start, end);
 		}
 		log("Extracted Data: " + retValue);
-		return Utils.trimToEmpty(retValue);
+		return ScreenerUtils.trimToEmpty(retValue);
 	}
 
 	private static String readDataBetween(Stock stock, String data, int startPos, String stratTag, String endTag) {
@@ -245,7 +228,7 @@ public class URLUtils {
 			retValue = (data.substring(start, end));
 		}
 		log(stock + ": " + stratTag + ": " + retValue);
-		return Utils.trimToEmpty(retValue);
+		return ScreenerUtils.trimToEmpty(retValue);
 	}
 
 	private static String readDataFromStart(String line, int indexTagStart, String stratTag, String endTag) {
@@ -255,7 +238,7 @@ public class URLUtils {
 			int end = line.indexOf(endTag, start) + endTag.length();
 			retValue = line.substring(start, end);
 		}
-		return Utils.trimToEmpty(retValue);
+		return ScreenerUtils.trimToEmpty(retValue);
 	}
 
 	private static String readDataFromEnd(String line, String stratTag, String endTag) {
@@ -267,9 +250,9 @@ public class URLUtils {
 				retValue = line.substring(start, end);
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
-		return Utils.trimToEmpty(retValue);
+		return ScreenerUtils.trimToEmpty(retValue);
 	}
 
 	public static String readDataBetweenUsingEndTag(String data, String stratTag, String endTag) {
@@ -278,19 +261,19 @@ public class URLUtils {
 			if (data != null && data.indexOf(endTag) > -1) {
 				int end = data.indexOf(endTag);
 				int start = data.lastIndexOf(stratTag, end - 1);
-				double ttmValue = Utils.toDouble(data.substring(start + 1, end));
+				double ttmValue = ScreenerUtils.toDouble(data.substring(start + 1, end));
 
 				end = start;
 				start = data.lastIndexOf(stratTag, end - 1);
-				double preValue = Utils.toDouble(data.substring(start + 1, end));
+				double preValue = ScreenerUtils.toDouble(data.substring(start + 1, end));
 
-				retValue = Double.valueOf(Utils.minDouble(ttmValue, preValue)).toString();
+				retValue = Double.valueOf(ScreenerUtils.minDouble(ttmValue, preValue)).toString();
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 		log("Extracted Data: " + retValue);
-		return Utils.trimToEmpty(retValue);
+		return ScreenerUtils.trimToEmpty(retValue);
 	}
 
 	private static String readDataBetweenUsingEndTag(Stock stock, String data, String stratTag, String endTag) {
@@ -300,31 +283,31 @@ public class URLUtils {
 				int end = data.indexOf(endTag);
 				int start = data.lastIndexOf(stratTag, end - 1);
 				String ttmValue = data.substring(start + 1, end);
-				if (Utils.isNotEmpty(ttmValue)) {
+				if (ScreenerUtils.isNotEmpty(ttmValue)) {
 					end = start;
 					start = data.lastIndexOf(stratTag, end - 1);
 					retValue = data.substring(start + 1, end);
-					if (Utils.isNotDouble(retValue)) {
+					if (ScreenerUtils.isNotDouble(retValue)) {
 						retValue = ttmValue;
 					}
 				}
-				if (Utils.isNotDouble(retValue)) {
+				if (ScreenerUtils.isNotDouble(retValue)) {
 					retValue = "0";
 				}
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
-		return Utils.trimToEmpty(retValue);
+		return ScreenerUtils.trimToEmpty(retValue);
 	}
 
 	public static Stream<String> getStockData(Stock stock) throws Exception {
 		try {
-			String fileName = cacheFolder + stock + ".html";
+			String fileName = DIR_CACHE + stock + ".html";
 			Path path = Paths.get(fileName);
 			return Files.lines(path, Charset.forName("UTF-8"));
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 		return Stream.empty();
 	}
@@ -335,10 +318,10 @@ public class URLUtils {
 
 	public static boolean exists(Stock stock) {
 		try {
-			String fileName = cacheFolder + stock + ".html";
+			String fileName = DIR_CACHE + stock + ".html";
 			return Files.exists(Paths.get(fileName));
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 		return false;
 	}
@@ -348,13 +331,13 @@ public class URLUtils {
 	}
 
 	public static synchronized boolean needsUpdate(Stock stock, int days) {
-		if (stock.isForceUpdate()) {
+		if (stock.isUpdate()) {
 			log("Force Update stock data.." + stock);
 			return true;
 		}
 		try {
 			log("Checking needsUpdate stock data for days: " + days);
-			String fileName = cacheFolder + stock + ".html";
+			String fileName = DIR_CACHE + stock + ".html";
 			Path path = Paths.get(fileName);
 			if (Files.exists(path)) {
 				FileTime lastModifiedTime = Files.getLastModifiedTime(path);
@@ -367,7 +350,7 @@ public class URLUtils {
 				return needsUpdate;
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 		return true;
 	}
@@ -377,7 +360,7 @@ public class URLUtils {
 	}
 
 	public static void getStockHtml(Stock stock, boolean update, long sleep) throws Exception {
-		writeHTML(stock, url + stock, cacheFolder + stock + ".html", update, sleep);
+		writeHTML(stock, URL_BASE + stock, DIR_CACHE + stock + ".html", update, sleep);
 	}
 
 	public static void writeHTML(Stock stock, String url, String fileName, boolean update) throws Exception {
@@ -398,7 +381,7 @@ public class URLUtils {
 			String str = downlaodData(stock, url);
 			writeFile(stock, fileName, str);
 			log("Data downloaded for: " + stock);
-			int sleepTime = 1000 * URLUtils.random.nextInt(10);
+			int sleepTime = 5000;
 			sleepTime = sleepTime > 1 ? sleepTime : 5000;
 			log("Sleeping for: " + sleepTime);
 			Thread.sleep(sleepTime);
@@ -409,10 +392,10 @@ public class URLUtils {
 
 	private static String getUrl(Stock stock, String url) {
 		try {
-			String searchUrl = searchURL + replaceSymbolHash(stock.getSymbol());
+			String searchUrl = URL_SEARCH + getStockSymbolForSearch(stock.getSymbol());
 			String data = downlaodUnparsedData(searchUrl).toString();
 			if (data != null && data.startsWith("[")) {
-				List<JsonStock> jsonData = gson.fromJson(data, clazz);
+				List<JsonStock> jsonData = GSON.fromJson(data, CLAZZ);
 				if (jsonData != null) {
 					String symbol = "/" + stock.getSymbol() + "/";
 					JsonStock jsonStock = jsonData.stream().filter(s -> (s.getUrl().indexOf(symbol) > 0)).findAny()
@@ -421,25 +404,25 @@ public class URLUtils {
 						jsonStock = jsonData.get(0);
 					}
 					if (jsonStock != null) {
-						url = baseURL + jsonStock.getUrl();
+						url = URL_BASE + jsonStock.getUrl();
 						stock.setConsolidated(jsonStock.getUrl().indexOf("consolidated") > 0);
 						stock.setCompanyId(jsonStock.getId());
-						stock.setName(Utils.substring(jsonStock.getName(), 19));
+						stock.setName(ScreenerUtils.substring(jsonStock.getName(), 19));
 					}
 				}
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 		return url;
 	}
 
 	public static void writeFile(Stock stock, String fileName, String str) throws Exception {
 		ensureCacheFolder();
-		if (Utils.isNotEmpty(str)) {
-			writeFile(rawcacheFolder + stock + ".html", str);
+		if (ScreenerUtils.isNotEmpty(str)) {
+			writeFile(DIR_RAW_CACHE + stock + ".html", str);
 			str = normalizeData(str);
-			if (Utils.isNotEmpty(str)) {
+			if (ScreenerUtils.isNotEmpty(str)) {
 				str = "name=" + stock.getName() + "=" + str;
 				writeFile(fileName, str);
 			}
@@ -457,11 +440,11 @@ public class URLUtils {
 		StringBuffer buff = new StringBuffer("");
 		if (stock.getCompanyId() > 0) {
 			StringBuffer medianPEURL = new StringBuffer("");
-			medianPEURL.append(apiURL);
+			medianPEURL.append(URL_API);
 			medianPEURL.append(stock.getCompanyId());
-			medianPEURL.append(medianPESuffix);
+			medianPEURL.append(SUFFIX_MEDIAN_PE);
 			if (stock.isConsolidated()) {
-				medianPEURL.append(consolidatedSuffix);
+				medianPEURL.append(SUFFIX_CONSOLIDATED);
 			}
 			buff.append(downlaodUnparsedData(medianPEURL.toString()));
 		}
@@ -471,14 +454,14 @@ public class URLUtils {
 	public static StringBuffer downlaodUnparsedData(String url) {
 		StringBuffer buff = new StringBuffer("");
 		try {
-			log("Download: " + url);
+			log("Downloading: " + url);
 			try (Scanner scanner = new Scanner(new URL(url).openStream())) {
-				while (scanner.hasNext()) {
+				while (scanner.hasNextLine()) {
 					buff.append(scanner.nextLine());
 				}
 			}
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 		return buff;
 	}
@@ -506,23 +489,23 @@ public class URLUtils {
 		try {
 			Files.write(Paths.get(fileName), data.getBytes());
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 	}
 
 	public static void ensureCacheFolder() {
 		try {
-			Files.createDirectories(Paths.get(rawcacheFolder));
+			Files.createDirectories(Paths.get(DIR_RAW_CACHE));
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 	}
 
 	public static Stream<String> getFromCache(String fileName) {
 		try {
-			return Files.lines(Paths.get(cacheFolder + fileName), Charset.forName("UTF-8"));
+			return Files.lines(Paths.get(DIR_CACHE + fileName), Charset.forName("UTF-8"));
 		} catch (Exception e) {
-			Utils.handleException(e);
+			ScreenerUtils.handleException(e);
 		}
 		return Stream.empty();
 	}
@@ -542,7 +525,7 @@ public class URLUtils {
 			}
 			data = temp;
 		}
-		return Utils.toIntDefault(data);
+		return ScreenerUtils.toIntDefault(data);
 	}
 
 	public static String extractText(String data) {
@@ -562,7 +545,7 @@ public class URLUtils {
 		return data;
 	}
 
-	public static String replaceSymbolHash(String str) {
+	public static String getStockSymbolForSearch(String str) {
 		if (str != null) {
 			String string = searchURLMap.get(str);
 			if (string != null) {
@@ -588,7 +571,7 @@ public class URLUtils {
 		Set<String> symbolsSet = new HashSet<>();
 		Stream<String> stream = Files.lines(Paths.get(dataFile));
 		stream.forEach(line -> {
-			if (Utils.isNotEmpty(line)) {
+			if (ScreenerUtils.isNotEmpty(line)) {
 				symbolsSet.add(line.trim());
 			}
 		});
@@ -599,16 +582,16 @@ public class URLUtils {
 	public static int average35(String price1, String price3, String price5) {
 		int avg = average("0", price3, price5, "0");
 		if (avg == 0) {
-			avg = Utils.toInt(price1);
+			avg = ScreenerUtils.toInt(price1);
 		}
 		return avg;
 	}
 
 	public static int average(String price1, String price3, String price5, String price10) {
-		int iprice1 = Utils.toInt(price1);
-		int iprice3 = Utils.toInt(price3);
-		int iprice5 = Utils.toInt(price5);
-		int iprice10 = Utils.toInt(price10);
+		int iprice1 = ScreenerUtils.toInt(price1);
+		int iprice3 = ScreenerUtils.toInt(price3);
+		int iprice5 = ScreenerUtils.toInt(price5);
+		int iprice10 = ScreenerUtils.toInt(price10);
 		return getMinimum(iprice1, iprice3, iprice5, iprice10);
 	}
 
@@ -636,32 +619,13 @@ public class URLUtils {
 	}
 
 	public static void log(String data) {
-		try {
-			System.out.println(data);
-			data = data + "\n";
-			Files.write(Paths.get(logFileName), data.getBytes(), StandardOpenOption.APPEND);
-		} catch (IOException e) {
-			System.out.println("Error while writing to log file : " + logFileName);
-		}
-	}
-
-	public static void logClean() {
-		try {
-			File file = Paths.get(logFileName).toFile();
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			Files.write(Paths.get(logFileName), "\n".getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-		} catch (IOException e) {
-			System.out.println("Error while writing to log file : " + logFileName);
-		}
+		System.out.println(data);
 	}
 
 	public static synchronized boolean underProcess(Stock stock) {
 		boolean isUnderProcess = false;
 		try {
-			String serFileName = cacheFolder + stock + ".ser";
-			Path path = Paths.get(serFileName);
+			Path path = Paths.get(ScreenerUtils.getCacheSerFileName(stock));
 			File file = path.toFile();
 			if (file.exists()) {
 				isUnderProcess = true;
@@ -678,7 +642,7 @@ public class URLUtils {
 	}
 	public static synchronized void cleanupTempFiles() {
 		try {
-			File file = new File(cacheFolder);
+			File file = new File(DIR_SER_CACHE);
 			if(file.exists()) {
 				Arrays.stream(file.listFiles((f, p) -> p.endsWith(".ser"))).forEach(File::delete);
 			}
@@ -691,12 +655,95 @@ public class URLUtils {
 		Set<String> symbolsSet = new HashSet<>();
 		Stream<String> stream = Files.lines(Paths.get(searchMapFile));
 		stream.forEach(line -> {
-			if (Utils.isNotEmpty(line)) {
+			if (ScreenerUtils.isNotEmpty(line)) {
 				symbolsSet.add(line.trim());
 			}
 		});
 		stream.close();
 		return symbolsSet;
 	}
+
+	public static HashMap<String, String> readPropertyFile(String filePath) throws Exception {
+		HashMap<String, String> map = new HashMap<>();
+		File file = new File(filePath);
+		if (file.exists()) {
+			Scanner scanner = new Scanner(file);
+			while (scanner.hasNextLine()) {
+				String nextLine = scanner.nextLine();
+				if (nextLine != null && nextLine.indexOf("=") > 0) {
+					String[] split = nextLine.split("=");
+					map.put(split[0].trim(), split[1].trim());
+				}
+			}
+			scanner.close();
+		} else {
+			throw new NullPointerException("File missing from location: " + file.getAbsolutePath());
+		}
+		return map;
+	}
 	
+	public static void updateJsonStock(Stock stock) {
+		try {
+			String stockSymbolForSearch = getStockSymbolForSearch(stock.getSymbol());
+			ScreenerUtils.log("Searching for symbol: {}", stockSymbolForSearch);
+			String searchUrl = URL_SEARCH + stockSymbolForSearch;
+			String data = downlaodUnparsedData(searchUrl).toString();
+			JsonStock jsonStock = new JsonStock();
+			jsonStock.setSymbol(stock.getSymbol());
+			
+			if (data == null) {
+				String error = ScreenerUtils.logError("Json Stock is null for stock: {} and url: {}", stockSymbolForSearch, searchUrl);
+				jsonStock.setComments(error);
+			} else if ("[]".equals(data)) {
+				String error = ScreenerUtils.logError("Json Stock is empty for stock: {} and url: {}", stockSymbolForSearch, searchUrl);
+				jsonStock.setComments(error);
+			} else if (data.startsWith("[")) {
+				List<JsonStock> jsonData = GSON.fromJson(data, CLAZZ);
+				if (jsonData != null) {
+					ScreenerUtils.log("Found jsonData Size: {}", jsonData.size());
+					if (jsonData.size() == 1) {
+						jsonStock = jsonData.get(0);
+					} else {
+						String symbol = "/" + stock.getSymbol() + "/";
+						jsonStock = jsonData.stream().filter(s -> (s.getUrl().indexOf(symbol) > 0)).findAny()
+								.orElse(null);
+					}
+				}
+			}
+			updateStockMetaData(stock, jsonStock);
+		} catch (Exception e) {
+			ScreenerUtils.handleException(e);
+		}
+	}
+
+	public static void updateStockMetaData(Stock stock, JsonStock jsonStock) {
+		if(jsonStock != null) {
+			jsonStock.setSymbol(stock.getSymbol());
+			stock.setJsonStock(jsonStock);
+			ScreenerUtils.log(jsonStock.toString());
+		} else {
+			ScreenerUtils.logError("Json Stock is null for stock: {}", stock.getSymbol());	
+		}
+	}
+
+	public static synchronized Set<Stock> getStockSymbols(String inputFile) throws Exception {
+		return getStockSymbols(inputFile, true, 10);
+	}
+
+	public static synchronized Set<Stock> getStockSymbols(String inputFile, boolean update, int updateDays) throws Exception {
+		Set<String> readSymbols = ScreenerURLUtils.readSymbols(inputFile);
+		Set<Stock> symbolsSet = readSymbols.stream()
+				.map(ScreenerUtils::trimToNull)
+				.filter(Objects::nonNull)
+				.map(s->{
+					Stock stock = new Stock(s);
+					stock.setUpdate(update);
+					stock.setDaysToUpdate(updateDays);
+					return stock;
+				}).sorted()
+				.collect(Collectors.toSet());
+		
+		return symbolsSet;
+	}
+
 }

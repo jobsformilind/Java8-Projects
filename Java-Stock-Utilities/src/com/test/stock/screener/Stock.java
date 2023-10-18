@@ -1,15 +1,16 @@
-package com.test.stock;
+package com.test.stock.screener;
 
 import java.util.Comparator;
 
-import com.test.stock.utils.URLUtils;
-import com.test.stock.utils.Utils;
-
 public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	boolean consolidated;
-	boolean forceUpdate;
+	boolean update;
 	int daysToUpdate = 10;
+	JsonStock jsonStock;
 	int companyId;
+	String companyName;
+	String companyURL;
+	
 	String symbol = "";
 	String bseSymbol = "";
 	String nseSymbol = "";
@@ -52,7 +53,7 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 		buff.append(EPS).append(",");
 		buff.append(medianPE).append(",");
-		buff.append(Utils.defaultIfEmpty(PE, medianPE)).append(",");
+		buff.append(ScreenerUtils.defaultIfEmpty(PE, medianPE)).append(",");
 		buff.append(saleAvg).append(",");
 
 		buff.append(cagr1).append(",");
@@ -138,16 +139,16 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	}
 
 	public void setBseSymbol(String bseSymbol) {
-		if(Utils.isEmpty(this.bseSymbol)) {
-			if(Utils.isNotEmpty(bseSymbol)) {
+		if(ScreenerUtils.isEmpty(this.bseSymbol)) {
+			if(ScreenerUtils.isNotEmpty(bseSymbol)) {
 				this.bseSymbol = bseSymbol;
 			}
 		}
 	}
 
 	public void setNseSymbol(String nseSymbol) {
-		if(Utils.isEmpty(this.nseSymbol)) {
-			if(Utils.isNotEmpty(nseSymbol)) {
+		if(ScreenerUtils.isEmpty(this.nseSymbol)) {
+			if(ScreenerUtils.isNotEmpty(nseSymbol)) {
 				this.nseSymbol = nseSymbol;
 			}
 		}
@@ -191,8 +192,7 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	@Override
 	public int compare(Stock o1, Stock o2) {
-		return URLUtils.random.nextInt(10);
-		//return o2.getSymbol().compareTo(o1.getSymbol());
+		return o2.getSymbol().compareTo(o1.getSymbol());
 	}
 
 	@Override
@@ -207,15 +207,15 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	public String average(String str1, String str2, String str3) {
 		int cnt = 0;
 		int total = 0;
-		if (Utils.isNotEmpty(str1)) {
+		if (ScreenerUtils.isNotEmpty(str1)) {
 			total += Integer.parseInt(str1);
 			cnt++;
 		}
-		if (Utils.isNotEmpty(str2)) {
+		if (ScreenerUtils.isNotEmpty(str2)) {
 			total += Integer.parseInt(str2);
 			cnt++;
 		}
-		if (Utils.isNotEmpty(str3)) {
+		if (ScreenerUtils.isNotEmpty(str3)) {
 			total += Integer.parseInt(str3);
 			cnt++;
 		}
@@ -325,12 +325,12 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		this.error = error;
 	}
 
-	public boolean isForceUpdate() {
-		return forceUpdate;
+	public boolean isUpdate() {
+		return update;
 	}
 
-	public void setForceUpdate(boolean forceUpdate) {
-		this.forceUpdate = forceUpdate;
+	public void setUpdate(boolean update) {
+		this.update = update;
 	}
 
 	public int getDaysToUpdate() {
@@ -366,6 +366,30 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	}
 	public String getProcessFile() {
 		return processFile;
+	}
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	public String getCompanyURL() {
+		return companyURL;
+	}
+
+	public void setCompanyURL(String companyURL) {
+		this.companyURL = companyURL;
+	}
+
+	public JsonStock getJsonStock() {
+		return jsonStock;
+	}
+
+	public void setJsonStock(JsonStock jsonStock) {
+		this.jsonStock = jsonStock;
 	}
 
 }

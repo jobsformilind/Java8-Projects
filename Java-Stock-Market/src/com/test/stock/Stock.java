@@ -2,7 +2,6 @@ package com.test.stock;
 
 import java.util.Comparator;
 
-import com.test.stock.utils.URLUtils;
 import com.test.stock.utils.Utils;
 
 public class Stock implements Comparator<Stock>, Comparable<Stock> {
@@ -30,14 +29,9 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	String EPS = "";
 	String sector = "";
 	String error = "";
-	String name = "";
-	String hi3y = "";
-	String cmp = "";
-	String processFile = "";
 
 	public Stock(String symbol) {
 		this.symbol = trim(symbol);
-		this.processFile = this.symbol +".cer";
 	}
 
 	public String getCSV() {
@@ -46,9 +40,8 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		buff.append(nseSymbol).append(",");
 		buff.append(symbol).append(",");
 		buff.append(faceValue).append(",");
-		buff.append(name).append(",");
-		buff.append(hi3y).append(",");
-		buff.append(cmp).append(",");
+		buff.append("XXXX").append(",");
+		buff.append("000").append(",");
 
 		buff.append(EPS).append(",");
 		buff.append(medianPE).append(",");
@@ -80,7 +73,6 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		buff.append("FV").append(",");
 		buff.append("Name").append(",");
 		buff.append("Hi3Y").append(",");
-		buff.append("CMP").append(",");
 
 		buff.append("EPS").append(",");
 		buff.append("M_PE").append(",");
@@ -191,8 +183,8 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	@Override
 	public int compare(Stock o1, Stock o2) {
-		return URLUtils.random.nextInt(10);
-		//return o2.getSymbol().compareTo(o1.getSymbol());
+		return 0;
+		//return o1.getSymbol().compareTo(o2.getSymbol());
 	}
 
 	@Override
@@ -340,32 +332,4 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	public void setDaysToUpdate(int daysToUpdate) {
 		this.daysToUpdate = daysToUpdate;
 	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getHi3y() {
-		return hi3y;
-	}
-
-	public void setHi3y(String hi3y) {
-		this.hi3y = hi3y;
-	}
-
-	public String getCmp() {
-		return cmp;
-	}
-
-	public void setCmp(String cmp) {
-		this.cmp = cmp;
-	}
-	public String getProcessFile() {
-		return processFile;
-	}
-
 }
