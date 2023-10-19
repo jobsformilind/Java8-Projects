@@ -1,9 +1,7 @@
 package com.test.stock.screener;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.test.stock.screener.meta.Counter;
 import com.test.stock.screener.meta.Stock;
@@ -17,7 +15,7 @@ public class StockDataDownloader {
 		Set<Stock> stocksSet = URLUtils.getStocksToProcess();
 		Runtime.getRuntime().addShutdownHook(new DownloaderThread(stocksSet));
 		downloadStockData(stocksSet);
-		handleFailedStocks(stocksSet);
+		URLUtils.handleFailedStocks(stocksSet);
 		URLUtils.cleanupTempFiles();
 	}
 
@@ -26,7 +24,8 @@ public class StockDataDownloader {
 		Counter.initCounter(stocksSet.size());
 		stocksSet.stream().filter(Objects::nonNull).sorted().forEach(s -> {
 			Counter.getCounter().currentIncrease();
-			Utils.log("--------------");
+			Utils.log("------------------------------");
+			Utils.log("Download stock data :{ " + Counter.getCounter() + " }: " + s);
 			if (URLUtils.underProcess(s)) {
 				Utils.log("Stock is already under process...: " + s);
 			} else {
@@ -34,11 +33,6 @@ public class StockDataDownloader {
 			}
 		});
 		Utils.log("------------------------------");
-	}
-
-	private static void handleFailedStocks(Set<Stock> stocksSet) {
-		List<Stock> failed = stocksSet.stream().filter(Stock::isDownloadFailed).collect(Collectors.toList());
-		Utils.printCollection(failed, "Below stock download failed: ");
 	}
 
 	private static class DownloaderThread extends Thread {
@@ -50,7 +44,7 @@ public class StockDataDownloader {
 		
 		public void run() {
 			URLUtils.cleanupTempFiles();
-			handleFailedStocks(stocksSet);
+			URLUtils.handleFailedStocks(stocksSet);
 		}
 	}
 }

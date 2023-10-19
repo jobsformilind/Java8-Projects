@@ -26,7 +26,8 @@ public class SpecificStockDataDownloader {
 		Counter.initCounter(stocksSet.size());
 		stocksSet.stream().filter(Objects::nonNull).sorted().forEach(s -> {
 			Counter.getCounter().currentIncrease();
-			Utils.log("--------------");
+			Utils.log("------------------------------");
+			Utils.log("Download stock data :{ " + Counter.getCounter() + " }: " + s);
 			if (URLUtils.underProcess(s)) {
 				Utils.log("Stock is already under process...: " + s);
 			} else {
@@ -37,7 +38,7 @@ public class SpecificStockDataDownloader {
 	}
 
 	private static void handleFailedStocks(Set<Stock> stocksSet) {
-		List<Stock> failed = stocksSet.stream().filter(Stock::isDownloadFailed).collect(Collectors.toList());
+		List<Stock> failed = stocksSet.stream().filter(Stock::isFailed).collect(Collectors.toList());
 		Utils.printCollection(failed, "Below stock download failed: ");
 	}
 

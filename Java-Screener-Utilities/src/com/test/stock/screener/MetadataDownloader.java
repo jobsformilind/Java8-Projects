@@ -34,7 +34,8 @@ public class MetadataDownloader {
 		Counter.initCounter(stocksSet.size());
 		stocksSet.forEach(stock -> {
 			Counter.getCounter().currentIncrease();
-			Utils.log("------------------------------: {}", Counter.getCounter());
+			Utils.log("------------------------------");
+			Utils.log("Read stock meta data :{ " + Counter.getCounter() + " }: " + stock);
 			JsonStock jsonStock = stock.getJsonStock();
 			if (jsonStock != null) {
 				URLUtils.updateStockMetaData(stock, jsonStock);
@@ -55,6 +56,7 @@ public class MetadataDownloader {
 
 		public void run() {
 			URLUtils.cleanupTempFiles();
+			URLUtils.handleFailedStocks(stocksSet);
 			if (stocksSet != null && stocksSet.size() > 0) {
 				MetadataDownloader.saveStockMetaData(stocksSet);
 			}

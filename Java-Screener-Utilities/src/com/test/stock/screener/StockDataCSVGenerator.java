@@ -67,8 +67,6 @@ public class StockDataCSVGenerator {
 			stock.setName(URLUtils.readDataBetween(stock, "Name", "name=", "="));
 			stock.setCmp(URLUtils.readDataBetween(stock, "CMP", "CurrentPrice=", "="));
 			stock.setFaceValue(URLUtils.extractNumber(URLUtils.readTag(stock, "FaceValue", "FaceValue")));
-			stock.setBseSymbol(URLUtils.readDataBetween(stock, "Symbol", "BSE:", "="));
-			stock.setNseSymbol(URLUtils.readDataBetween(stock, "NSESymbol", "NSE:", "="));
 			stock.setSector(URLUtils.extractText(URLUtils.readDataBetween(stock, "Sector", "Sector:", "=")));
 			
 			stock.setMarketCap(URLUtils.readDataBetween(stock, "MarketCap", "=MarketCap=", "="));
@@ -88,23 +86,11 @@ public class StockDataCSVGenerator {
 			String salesData = URLUtils.readDataBetween(stock, "SALES_DATA", "CompoundedSalesGrowth", "CompoundedProfitGrowth");
 			URLUtils.parseSales(stock, salesData);
 
-			checkNSESymbol(stock, "NSE-SM:");
-			checkNSESymbol(stock, "NSE-RR:");
-			checkNSESymbol(stock, "NSE-BE:");
-			checkNSESymbol(stock, "NSE-BZ:");
 		} catch (Exception e) {
+			stock.setFailed();
 			Utils.handleException(e);
 		}
 		return stock;
-	}
-
-	private static void checkNSESymbol(Stock stock, String prefix) throws Exception {
-		if (Utils.isEmpty(stock.getNseSymbol())) {
-			stock.setNseSymbol(URLUtils.readDataBetween(stock, "NSE SYmbol", prefix, "="));
-		}
-		if (Utils.isNotEmpty(stock.getNseSymbol())) {
-			stock.setNseSymbol(stock.getNseSymbol().replaceAll("&amp;", "&"));
-		}
 	}
 
 	private static class CSVGeneratorThread extends Thread {
@@ -116,9 +102,7 @@ public class StockDataCSVGenerator {
 
 		public void run() {
 			URLUtils.cleanupTempFiles();
-			if (stocksSet != null && stocksSet.size() > 0) {
-				System.out.println("CSV Generator was killed....");
-			}
+			URLUtils.handleFailedStocks(stocksSet);
 		}
 	}
 }

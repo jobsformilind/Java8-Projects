@@ -6,34 +6,33 @@ import com.test.stock.screener.utils.Utils;
 
 public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	boolean consolidated;
-	boolean downloadFailed;
+	boolean isFailed;
 	boolean cached;
 	int daysToUpdate = 5;
 	JsonStock jsonStock;
 	
 	String symbol = "";
-	String bseSymbol = "";
-	String nseSymbol = "";
+	String name = "";
+	String hi3y = "";
 	String faceValue = "";
+	String EPS = "";
+	String medianPE = "";
+	String PE = "";
+	int saleAvg;
 	String cagr1 = "";
 	String cagr3 = "";
 	String cagr5 = "";
 	String cagr10 = "";
+	int cagrAvg;
+	String marketCap = "";
+	String sector = "";
+
+	String cmp = "";
 	String sale1 = "";
 	String sale3 = "";
 	String sale5 = "";
 	String sale10 = "";
-	int cagrAvg;
-	int saleAvg;
-	String marketCap = "";
-	String PE = "";
-	String medianPE = "";
-	String EPS = "";
-	String sector = "";
 	String error = "";
-	String name = "";
-	String hi3y = "";
-	String cmp = "";
 
 	public Stock(String symbol) {
 		this.symbol = trim(symbol);
@@ -41,8 +40,6 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	public String getCSV() {
 		StringBuffer buff = new StringBuffer();
-		buff.append(bseSymbol).append(",");
-		buff.append(nseSymbol).append(",");
 		buff.append(symbol).append(",");
 		buff.append(faceValue).append(",");
 		buff.append(name).append(",");
@@ -73,8 +70,6 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	public static String getCSVHeader() {
 		StringBuffer buff = new StringBuffer();
-		buff.append("BSE").append(",");
-		buff.append("NSE").append(",");
 		buff.append("Symbol").append(",");
 		buff.append("FV").append(",");
 		buff.append("Name").append(",");
@@ -134,30 +129,6 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	public void setSector(String sector) {
 		this.sector = trim(sector);
-	}
-
-	public void setBseSymbol(String bseSymbol) {
-		if(Utils.isEmpty(this.bseSymbol)) {
-			if(Utils.isNotEmpty(bseSymbol)) {
-				this.bseSymbol = bseSymbol;
-			}
-		}
-	}
-
-	public void setNseSymbol(String nseSymbol) {
-		if(Utils.isEmpty(this.nseSymbol)) {
-			if(Utils.isNotEmpty(nseSymbol)) {
-				this.nseSymbol = nseSymbol;
-			}
-		}
-	}
-
-	public String getBseSymbol() {
-		return bseSymbol;
-	}
-
-	public String getNseSymbol() {
-		return nseSymbol;
 	}
 
 	public String getCagr3() {
@@ -367,12 +338,12 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		this.jsonStock = jsonStock;
 	}
 
-	public boolean isDownloadFailed() {
-		return downloadFailed;
+	public boolean isFailed() {
+		return isFailed;
 	}
 
-	public void setDownloadFailed(boolean downloadFailed) {
-		this.downloadFailed = downloadFailed;
+	public void setFailed() {
+		this.isFailed = true;
 	}
 
 	public boolean isCached() {

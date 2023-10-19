@@ -60,7 +60,7 @@ public class URLUtils implements Constants {
 		if (tagValue.length() > 0 && !Character.isDigit(tagValue.charAt(0))) {
 			tagValue.deleteCharAt(0);
 		}
-		//Utils.log(stock + ": " + tag + "=" + tagValue);
+		// Utils.log(stock + ": " + tag + "=" + tagValue);
 		return tagValue.toString();
 	}
 
@@ -71,18 +71,19 @@ public class URLUtils implements Constants {
 			tagValue.append(readDataBetween(stock, key, line, stratTag, endTag));
 		});
 		stream.close();
-		//Utils.log(stock + ": " + tagValue);
+		// Utils.log(stock + ": " + tagValue);
 		return tagValue.toString();
 	}
 
-	public static String readDataBetweenUsingEndTag(Stock stock, String key, String stratTag, String endTag) throws Exception {
+	public static String readDataBetweenUsingEndTag(Stock stock, String key, String stratTag, String endTag)
+			throws Exception {
 		final StringBuffer tagValue = new StringBuffer("");
 		try (Stream<String> stream = getStockData(stock)) {
 			stream.forEach(line -> {
 				tagValue.append(readDataBetweenUsingEndTag(line, key, stratTag, endTag));
 			});
 		}
-		//Utils.log(stock + ": " + endTag + ": " + tagValue);
+		// Utils.log(stock + ": " + endTag + ": " + tagValue);
 		return tagValue.toString();
 	}
 
@@ -92,7 +93,8 @@ public class URLUtils implements Constants {
 			stock.setCagr1(Utils.toIntDefault(readDataBetweenDoubly(stock, "Cagr1", data, "1Year:=", "1Year:", "%")));
 			stock.setCagr3(Utils.toIntDefault(readDataBetweenDoubly(stock, "Cagr3", data, "3Years:=", "3Years:", "%")));
 			stock.setCagr5(Utils.toIntDefault(readDataBetweenDoubly(stock, "Cagr5", data, "5Years:=", "5Years:", "%")));
-			stock.setCagr10(Utils.toIntDefault(readDataBetweenDoubly(stock, "Cagr10", data, "10Years:=", "10Years:", "%")));
+			stock.setCagr10(
+					Utils.toIntDefault(readDataBetweenDoubly(stock, "Cagr10", data, "10Years:=", "10Years:", "%")));
 			stock.setCagrAvg(average(stock.getCagr1(), stock.getCagr3(), stock.getCagr5(), stock.getCagr10()));
 		}
 	}
@@ -139,15 +141,16 @@ public class URLUtils implements Constants {
 			stock.setSale1(Utils.toIntDefault(readDataBetweenDoubly(stock, "Sale1", data, "TTM:=", "TTM:", "%")));
 			stock.setSale3(Utils.toIntDefault(readDataBetweenDoubly(stock, "Sale3", data, "3Years:=", "3Years:", "%")));
 			stock.setSale5(Utils.toIntDefault(readDataBetweenDoubly(stock, "Sale5", data, "5Years:=", "5Years:", "%")));
-			stock.setSale10(Utils.toIntDefault(readDataBetweenDoubly(stock, "Sale10", data, "10Years:=", "10Years:", "%")));
+			stock.setSale10(
+					Utils.toIntDefault(readDataBetweenDoubly(stock, "Sale10", data, "10Years:=", "10Years:", "%")));
 			stock.setSaleAvg(average(stock.getSale1(), stock.getSale3(), stock.getSale5(), stock.getSale10()));
 			// stock.setSaleAvg35(average35(stock.getSale1(), stock.getSale3(),
 			// stock.getSale5()));
 		}
 	}
 
-	private static String readDataBetweenDoubly(Stock stock, String key, String data, String stratTag, String anotherstratTag,
-			String endTag) {
+	private static String readDataBetweenDoubly(Stock stock, String key, String data, String stratTag,
+			String anotherstratTag, String endTag) {
 		String retVal = readDataBetween(stock, key, data, stratTag, endTag, 0);
 		// Utils.log("1retVal=" + retVal);
 		if (Utils.isEmpty(retVal)) {
@@ -164,7 +167,6 @@ public class URLUtils implements Constants {
 
 	private static String readDataBetween(Stock stock, String key, String data, String stratTag, String endTag, int ignorePos) {
 		String retValue = "";
-		//Utils.log("Processing data={}, stratTag={}, endTag={}", data, stratTag, endTag);
 		if (data != null && data.indexOf(stratTag) > -1) {
 			int start = data.indexOf(stratTag) + stratTag.length() + ignorePos;
 			int end = data.indexOf(endTag, start);
@@ -206,46 +208,47 @@ public class URLUtils implements Constants {
 		return Stream.empty();
 	}
 
-	private static boolean needsUpdate(Stock stock) {
+	private static boolean needsUpdate(Stock stock) throws Exception {
 		boolean needsUpdate = true;
-		try {
-			int days = stock.getDaysToUpdate();
-			Path path = Paths.get(Utils.getCacheFileName(stock));
-			if (Files.exists(path)) {
-				FileTime lastModifiedTime = Files.getLastModifiedTime(path);
-				Utils.log("Verify last Modified Time for path: {}", path);
-				Utils.log("last Modified Time: {}", Utils.formatDate(new Date(lastModifiedTime.toMillis())));
-				long modified = lastModifiedTime.toInstant().getEpochSecond();
-				long now = Instant.now().getEpochSecond();
-				long diff = now - modified;
-				long day = days * 24 * 60 * 60;
-				long diffDays = diff / (24 * 60 * 60);
-				Utils.log("File exists so checking needsUpdate stock for days: {} with diffDays: {}", days, diffDays);
-				needsUpdate = (day - diff) < 0;
-			}
-		} catch (Exception e) {
-			Utils.handleException(e);
+		int days = stock.getDaysToUpdate();
+		Path path = Paths.get(Utils.getCacheFileName(stock));
+		if (Files.exists(path)) {
+			FileTime lastModifiedTime = Files.getLastModifiedTime(path);
+			Utils.log("Verify last Modified Time for path: {}", path);
+			Utils.log("last Modified Time: {}", Utils.formatDate(new Date(lastModifiedTime.toMillis())));
+			long modified = lastModifiedTime.toInstant().getEpochSecond();
+			long now = Instant.now().getEpochSecond();
+			long diff = now - modified;
+			long day = days * 24 * 60 * 60;
+			long diffDays = diff / (24 * 60 * 60);
+			Utils.log("File exists so checking needsUpdate stock for days: {} with diffDays: {}", days, diffDays);
+			needsUpdate = (day - diff) < 0;
 		}
 		Utils.log("needsUpdate : " + needsUpdate);
 		return needsUpdate;
 	}
 
 	public static void downloadStockHTML(Stock stock) {
-		boolean needsUpdate = needsUpdate(stock);
-		if (needsUpdate) {
-			Utils.log("Downloading data for:{ " + Counter.getCounter() + " }: " + stock);
-			String str = downloadStockFullHTML(stock);
-			writeFile(stock, str);
-			Utils.log("Data downloaded for: " + stock);
-			Utils.sleepRandomly(5);
-		} else {
-			Utils.log("Updated data already exists for : " + stock);
+		try {
+			boolean needsUpdate = needsUpdate(stock);
+			if (needsUpdate) {
+				Utils.log("Downloading data for:{ " + Counter.getCounter() + " }: " + stock);
+				String str = downloadStockFullHTML(stock);
+				writeFile(stock, str);
+				Utils.log("Data downloaded for: " + stock);
+				Utils.sleepRandomly(5);
+			} else {
+				Utils.log("Updated data already exists for : " + stock);
+			}
+		} catch (Exception e) {
+			stock.setFailed();
+			Utils.handleException(e);
 		}
 	}
 
-	private static void writeFile(Stock stock, String str) {
+	private static void writeFile(Stock stock, String str) throws Exception {
 		try {
-			if (Utils.isNotEmpty(str)) {				
+			if (Utils.isNotEmpty(str) && !stock.isFailed()) {
 				writeFile(Utils.getCacheRawFileName(stock), str);
 				str = normalizeData(str);
 				if (Utils.isNotEmpty(str)) {
@@ -254,18 +257,20 @@ public class URLUtils implements Constants {
 				}
 			}
 		} catch (Exception e) {
+			stock.setFailed();
 			Utils.handleException(e);
+			throw e;
 		}
 	}
 
-	private static String downloadStockFullHTML(Stock stock) {
+	private static String downloadStockFullHTML(Stock stock) throws Exception {
 		StringBuffer buff = new StringBuffer("");
 		buff.append(downlaodUnparsedData(stock, stock.getCompanyURL()));
 		buff.append(downlaodUnparsedData(stock, stock.getMedianPEURL()));
 		return buff.toString();
 	}
 
-	private static StringBuffer downlaodUnparsedData(Stock stock, String url) {
+	private static StringBuffer downlaodUnparsedData(Stock stock, String url) throws Exception {
 		StringBuffer buff = new StringBuffer("");
 		try {
 			Utils.log("Downloading: " + url);
@@ -275,8 +280,9 @@ public class URLUtils implements Constants {
 				}
 			}
 		} catch (Exception e) {
-			stock.setDownloadFailed(true);
+			stock.setFailed();
 			Utils.handleException(e);
+			throw e;
 		}
 		return buff;
 	}
@@ -418,8 +424,7 @@ public class URLUtils implements Constants {
 			if (file.exists()) {
 				Utils.sleepRandomly(5);
 				Utils.log("Cleaning up all temporary .tmp files from: {} ", file.getAbsolutePath());
-				//Arrays.stream(file.listFiles()).forEach(System.out::println);
-				Arrays.stream(file.listFiles((f, p) -> p.endsWith(".tmp"))).peek(System.out::println).forEach(File::delete);
+				Arrays.stream(file.listFiles((f, p) -> p.endsWith(".tmp"))).forEach(File::delete);
 			}
 		} catch (Exception e) {
 			Utils.handleException(e);
@@ -499,7 +504,7 @@ public class URLUtils implements Constants {
 		List<JsonStock> stockMetaData = getStockMetaData();
 		Set<Stock> stocksSet = getStockSymbols();
 		updateJsonStock(stocksSet, stockMetaData);
-		stocksSet.stream().forEach(s-> s.setCached(Utils.isCacheFileExists(s)));
+		stocksSet.stream().forEach(s -> s.setCached(Utils.isCacheFileExists(s)));
 		return stocksSet;
 	}
 
@@ -507,7 +512,7 @@ public class URLUtils implements Constants {
 		List<JsonStock> stockMetaData = getStockMetaData();
 		Set<Stock> stocksSet = getStockSymbols();
 		updateSpecificJsonStock(stocksSet, stockMetaData);
-		stocksSet.stream().forEach(s-> s.setCached(Utils.isCacheFileExists(s)));
+		stocksSet.stream().forEach(s -> s.setCached(Utils.isCacheFileExists(s)));
 		return stocksSet;
 	}
 
@@ -517,6 +522,11 @@ public class URLUtils implements Constants {
 				.sorted().collect(Collectors.toSet());
 
 		return symbolsSet;
+	}
+
+	public static void handleFailedStocks(Set<Stock> stocksSet) {
+		List<Stock> failed = stocksSet.stream().filter(Stock::isFailed).collect(Collectors.toList());
+		Utils.printCollection(failed, "Below stocks failed: ");
 	}
 
 	private static List<JsonStock> getStockMetaData() throws Exception {
@@ -535,13 +545,17 @@ public class URLUtils implements Constants {
 
 		stocksMap.entrySet().forEach(e -> {
 			if (metaStocksMap.containsKey(e.getKey())) {
-				e.getValue().setJsonStock(metaStocksMap.get(e.getKey()));
+				JsonStock jsonStock = metaStocksMap.get(e.getKey());
+				e.getValue().setJsonStock(jsonStock);
+				e.getValue().setName(jsonStock.getName());
 			}
 		});
 		metaStocksMap.entrySet().forEach(e -> {
 			if (!stocksMap.containsKey(e.getKey())) {
+				JsonStock jsonStock = e.getValue();
 				Stock stock = new Stock(e.getKey());
-				stock.setJsonStock(e.getValue());
+				stock.setJsonStock(jsonStock);
+				stock.setName(jsonStock.getName());
 				stocksSet.add(stock);
 			}
 		});
@@ -553,7 +567,9 @@ public class URLUtils implements Constants {
 
 		stocksMap.entrySet().forEach(e -> {
 			if (metaStocksMap.containsKey(e.getKey())) {
-				e.getValue().setJsonStock(metaStocksMap.get(e.getKey()));
+				JsonStock jsonStock = metaStocksMap.get(e.getKey());
+				e.getValue().setJsonStock(jsonStock);
+				e.getValue().setName(jsonStock.getName());
 			}
 		});
 	}

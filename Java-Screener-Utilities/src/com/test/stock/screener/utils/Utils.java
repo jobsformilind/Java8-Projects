@@ -371,7 +371,7 @@ public class Utils implements Constants {
 	}
 
 	public static String getTempFileName(Stock stock) {
-		return DIR_SER_CACHE + stock.getSymbol() + ".ser";
+		return DIR_SER_CACHE + stock.getSymbol() + ".tmp";
 	}
 
 	public static String getCacheRawFileName(Stock stock) {
