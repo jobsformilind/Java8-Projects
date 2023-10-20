@@ -39,10 +39,12 @@ public class URLUtils implements Constants {
 	public static String searchMapFile = Utils.getStocksHomeDir() + "symbols_searchMap.txt";
 	public static String inputFile = Utils.getStocksHomeDir() + "symbols_input.txt";
 	public static String outFile = Utils.getStocksHomeDir() + "output.csv";
+	public static String logFile = Utils.getStocksHomeDir() + "run.log";
 	public static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	public static Type CLAZZ = new TypeToken<ArrayList<JsonStock>>() {}.getType();
 
 	public static void init() throws Exception {
+		Utils.recreateFile(logFile);
 		loadSearchURLMap(searchMapFile);
 		Utils.ensureFile(metadataFile);
 		Utils.ensureFolder(DIR_CACHE);

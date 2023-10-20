@@ -11,7 +11,7 @@ import com.test.stock.screener.meta.Stock;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 
-public class MetadataDownloader {
+public class StocksMetadataDownloader {
 
 	public static void main(String[] args) throws Exception {
 		URLUtils.init();
@@ -58,7 +58,7 @@ public class MetadataDownloader {
 			URLUtils.cleanupTempFiles();
 			URLUtils.handleFailedStocks(stocksSet);
 			if (stocksSet != null && stocksSet.size() > 0) {
-				MetadataDownloader.saveStockMetaData(stocksSet);
+				StocksMetadataDownloader.saveStockMetaData(stocksSet);
 			}
 		}
 	}

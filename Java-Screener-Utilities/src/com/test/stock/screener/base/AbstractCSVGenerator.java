@@ -1,4 +1,5 @@
-package com.test.stock.screener;
+package com.test.stock.screener.base;
+
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -8,21 +9,23 @@ import com.test.stock.screener.meta.Stock;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 
-public class StockDataCSVGenerator {
-	private static int filter_cagr = 0;
-	private static int filter_roe = 0;
-	private static int filter_profit = 0;
+public abstract class AbstractCSVGenerator {
+	private int filter_cagr = 0;
+	private int filter_roe = 0;
+	private int filter_profit = 0;
 
-	public static void main(String[] args) throws Exception {
+	protected abstract Set<Stock> getStocksToProcess() throws Exception;
+
+	protected void generateCSVFile() throws Exception {
 		URLUtils.init();
-		Set<Stock> stocksSet = URLUtils.getStocksToProcess();
+		Set<Stock> stocksSet = getStocksToProcess();
 		Runtime.getRuntime().addShutdownHook(new CSVGeneratorThread(stocksSet));
 		analyzeAllStockData(stocksSet);
 		generateCSVFile(stocksSet);
 		URLUtils.cleanupTempFiles();
 	}
 
-	private static void generateCSVFile(Set<Stock> stocksSet) throws Exception {
+	private void generateCSVFile(Set<Stock> stocksSet) throws Exception {
 		stocksSet = filterByCAGRRatio(stocksSet, filter_cagr);
 		stocksSet = filterByROERatio(stocksSet, filter_roe);
 		stocksSet = filterByProfitRatio(stocksSet, filter_profit);
@@ -32,19 +35,19 @@ public class StockDataCSVGenerator {
 		URLUtils.writeFile(URLUtils.outFile, data);
 	}
 
-	private static Set<Stock> filterByProfitRatio(Set<Stock> stocksSet, int filter_profit) {
+	private Set<Stock> filterByProfitRatio(Set<Stock> stocksSet, int filter_profit) {
 		return stocksSet.stream().filter(s -> s.getCagrAvg() >= filter_profit).collect(Collectors.toSet());
 	}
 
-	private static Set<Stock> filterByROERatio(Set<Stock> stocksSet, int filter_roe) {
+	private Set<Stock> filterByROERatio(Set<Stock> stocksSet, int filter_roe) {
 		return stocksSet.stream().filter(s -> s.getCagrAvg() >= filter_roe).collect(Collectors.toSet());
 	}
 
-	private static Set<Stock> filterByCAGRRatio(Set<Stock> stocksSet, int filter_cagr) {
+	private Set<Stock> filterByCAGRRatio(Set<Stock> stocksSet, int filter_cagr) {
 		return stocksSet.stream().filter(s -> s.getCagrAvg() >= filter_cagr).collect(Collectors.toSet());
 	}
 
-	private static void analyzeAllStockData(Set<Stock> stockSet) {
+	private void analyzeAllStockData(Set<Stock> stockSet) {
 		Utils.log("------------------------------");
 		Utils.log("Starting stocks data analysis");
 		Utils.log("");
@@ -60,7 +63,7 @@ public class StockDataCSVGenerator {
 		Utils.log("------------------------------");
 	}
 	
-	private static Stock extractSingleStockData(Stock stock) {
+	private Stock extractSingleStockData(Stock stock) {
 		Utils.log("Analyzing stock data :{ " + Counter.getCounter() + " }: " + stock);		
 		try {
 			stock.setHi3y(URLUtils.readDataBetween(stock, "Hi3y", "High/Low=", "="));
@@ -93,7 +96,7 @@ public class StockDataCSVGenerator {
 		return stock;
 	}
 
-	private static class CSVGeneratorThread extends Thread {
+	private class CSVGeneratorThread extends Thread {
 		private Set<Stock> stocksSet = null;
 
 		public CSVGeneratorThread(Set<Stock> stocksSet) {

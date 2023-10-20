@@ -1,27 +1,27 @@
-package com.test.stock.screener;
+package com.test.stock.screener.base;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.test.stock.screener.meta.Counter;
 import com.test.stock.screener.meta.Stock;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 
-public class SpecificStockDataDownloader {
+public abstract class AbstractStockDataDownloader {
 
-	public static void main(String[] args) throws Exception {
+	protected abstract Set<Stock> getStocksToProcess() throws Exception;
+
+	protected void downloadStockData() throws Exception {
 		URLUtils.init();
-		Set<Stock> stocksSet = URLUtils.getSpecificStocksToProcess();
+		Set<Stock> stocksSet = getStocksToProcess();
 		Runtime.getRuntime().addShutdownHook(new DownloaderThread(stocksSet));
 		downloadStockData(stocksSet);
-		handleFailedStocks(stocksSet);
+		URLUtils.handleFailedStocks(stocksSet);
 		URLUtils.cleanupTempFiles();
 	}
 
-	private static void downloadStockData(Set<Stock> stocksSet) {
+	private void downloadStockData(Set<Stock> stocksSet) {
 		Utils.log("------------------------------");
 		Counter.initCounter(stocksSet.size());
 		stocksSet.stream().filter(Objects::nonNull).sorted().forEach(s -> {
@@ -37,12 +37,7 @@ public class SpecificStockDataDownloader {
 		Utils.log("------------------------------");
 	}
 
-	private static void handleFailedStocks(Set<Stock> stocksSet) {
-		List<Stock> failed = stocksSet.stream().filter(Stock::isFailed).collect(Collectors.toList());
-		Utils.printCollection(failed, "Below stock download failed: ");
-	}
-
-	private static class DownloaderThread extends Thread {
+	private class DownloaderThread extends Thread {
 		private Set<Stock> stocksSet = null;
 
 		public DownloaderThread(Set<Stock> stocksSet) {
@@ -51,7 +46,7 @@ public class SpecificStockDataDownloader {
 		
 		public void run() {
 			URLUtils.cleanupTempFiles();
-			handleFailedStocks(stocksSet);
+			URLUtils.handleFailedStocks(stocksSet);
 		}
 	}
 }

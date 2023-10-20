@@ -60,7 +60,7 @@ public class Utils implements Constants {
 		try {
 			Thread.sleep(millis);
 		} catch (Exception e) {
-			System.out.println("***ERROROO::: Got exception during sleep...");
+			log("***ERROROO::: Got exception during sleep...");
 		}
 	}
 
@@ -188,7 +188,7 @@ public class Utils implements Constants {
 		if (isEmpty(property)) {
 			property = System.getenv(propertyName);
 			if (isEmpty(property)) {
-				System.out.println("Please set system/env property: " + propertyName);
+				log("Please set system/env property: " + propertyName);
 				System.exit(0);
 			}
 		}
@@ -267,7 +267,7 @@ public class Utils implements Constants {
 
 	public static void printUnprocessedMap(Map<String, String> unprocessedMap) {
 		unprocessedMap.entrySet().stream().forEach(e -> {
-			System.out.println("*** Not Processesd: " + e);
+			log("*** Not Processesd: " + e);
 		});
 	}
 
@@ -307,8 +307,8 @@ public class Utils implements Constants {
 		try {
 			Path sourePath = soureFile.toPath();
 			Path targetPath = targetFile.toPath();
-			System.out.print("SourePath=" + sourePath.getFileName());
-			System.out.println(" -> TargetPath=" + targetPath.getFileName());
+			log("SourePath=" + sourePath.getFileName());
+			log(" -> TargetPath=" + targetPath.getFileName());
 			Files.copy(sourePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
 		} catch (Exception e) {
 			handleException(e);
@@ -352,8 +352,8 @@ public class Utils implements Constants {
 		return log(LOG_ERROR + logString, args);
 	}
 
-	public static String log(String logString) {
-		return log(logString, "");
+	public static String log(Object logString) {
+		return log(logString.toString(), "");
 	}
 
 	public static String log(String logString, Object... args) {
@@ -361,6 +361,11 @@ public class Utils implements Constants {
 			logString = logString.replace("{}", "%s");
 			String str = String.format(logString, args);
 			System.out.println(str);
+			try {
+				Files.write(Paths.get(URLUtils.logFile), (str + "\n").getBytes(), StandardOpenOption.APPEND);
+			} catch (IOException e) {
+				handleException(e);
+			}
 			return str;
 		}
 		return "";
@@ -393,15 +398,15 @@ public class Utils implements Constants {
 
 	public static <T> void printCollection(Collection<T> collection, String message) {
 		if (!collection.isEmpty()) {
-			System.out.println(message);
-			collection.stream().forEach(System.out::println);
+			log(message);
+			collection.stream().forEach(Utils::log);
 		}
 	}
 
 	public static void ensureFolder(String folderName) {
 		try {
 			Files.createDirectories(Paths.get(folderName));
-			System.out.println("Directory present: " + Paths.get(folderName));
+			log("Directory present: " + Paths.get(folderName));
 		} catch (Exception e) {
 			Utils.handleException(e);
 		}
@@ -413,7 +418,19 @@ public class Utils implements Constants {
 			if (!Files.exists(path)) {
 				Files.createFile(Paths.get(fileName));
 			}
-			System.out.println("File Path present: " + path);
+			log("File Path present: " + path);
+		} catch (Exception e) {
+			Utils.handleException(e);
+		}
+	}
+
+	public static void recreateFile(String fileName) {
+		try {
+			File file = new File(fileName);
+			if(file.exists()) {
+				file.delete();
+			}
+			file.createNewFile();
 		} catch (Exception e) {
 			Utils.handleException(e);
 		}
