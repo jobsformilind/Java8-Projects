@@ -88,7 +88,9 @@ public abstract class AbstractCSVGenerator {
 
 			String salesData = URLUtils.readDataBetween(stock, "SALES_DATA", "CompoundedSalesGrowth", "CompoundedProfitGrowth");
 			URLUtils.parseSales(stock, salesData);
-
+			
+			String highestPrice = URLUtils.readHighestPrice(stock);
+			stock.setHi3y("0".equals(highestPrice)?stock.getHi3y():highestPrice);
 		} catch (Exception e) {
 			stock.setFailed();
 			Utils.handleException(e);

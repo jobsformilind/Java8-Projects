@@ -167,6 +167,10 @@ public class Utils implements Constants {
 		}
 	}
 
+	public static double toDoubleObject(Object str) {
+		return str != null ? toDouble(str.toString()) : 0;
+	}
+
 	public static double toDouble(String str) {
 		try {
 			return Double.parseDouble(str);
@@ -437,13 +441,24 @@ public class Utils implements Constants {
 	}
 
 	public static String constructMedianPEURL(Stock stock) {
-		StringBuffer medianPEURL = new StringBuffer("");
-		medianPEURL.append(URL_API);
-		medianPEURL.append(stock.getCompanyId());
-		medianPEURL.append(SUFFIX_MEDIAN_PE);
+		StringBuffer url = new StringBuffer("");
+		url.append(URL_API);
+		url.append(stock.getCompanyId());
+		url.append(SUFFIX_MEDIAN_PE);
 		if (stock.isConsolidated()) {
-			medianPEURL.append(SUFFIX_CONSOLIDATED);
+			url.append(SUFFIX_CONSOLIDATED);
 		}
-		return medianPEURL.toString();
+		return url.toString();
+	}
+
+	public static String constructPriceUrl(Stock stock) {
+		StringBuffer url = new StringBuffer("");
+		url.append(URL_API);
+		url.append(stock.getCompanyId());
+		url.append(SUFFIX_PRICE);
+		if (stock.isConsolidated()) {
+			url.append(SUFFIX_CONSOLIDATED);
+		}
+		return url.toString();
 	}
 }

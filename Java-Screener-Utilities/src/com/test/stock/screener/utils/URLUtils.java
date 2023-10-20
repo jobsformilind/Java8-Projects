@@ -41,7 +41,8 @@ public class URLUtils implements Constants {
 	public static String outFile = Utils.getStocksHomeDir() + "output.csv";
 	public static String logFile = Utils.getStocksHomeDir() + "run.log";
 	public static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	public static Type CLAZZ = new TypeToken<ArrayList<JsonStock>>() {}.getType();
+	public static Type CLAZZ = new TypeToken<ArrayList<JsonStock>>() {
+	}.getType();
 
 	public static void init() throws Exception {
 		Utils.recreateFile(logFile);
@@ -73,7 +74,6 @@ public class URLUtils implements Constants {
 			tagValue.append(readDataBetween(stock, key, line, stratTag, endTag));
 		});
 		stream.close();
-		// Utils.log(stock + ": " + tagValue);
 		return tagValue.toString();
 	}
 
@@ -167,14 +167,15 @@ public class URLUtils implements Constants {
 		return readDataBetween(stock, key, data, stratTag, endTag, 0);
 	}
 
-	private static String readDataBetween(Stock stock, String key, String data, String stratTag, String endTag, int ignorePos) {
+	private static String readDataBetween(Stock stock, String key, String data, String stratTag, String endTag,
+			int ignorePos) {
 		String retValue = "";
 		if (data != null && data.indexOf(stratTag) > -1) {
 			int start = data.indexOf(stratTag) + stratTag.length() + ignorePos;
 			int end = data.indexOf(endTag, start);
 			retValue = (data.substring(start, end));
+			Utils.log("Extracted Key={}, Value={} ", key, retValue);
 		}
-		Utils.log("Extracted Key={}, Value={} ", key, retValue);
 		return Utils.trimToEmpty(retValue);
 	}
 
@@ -191,17 +192,71 @@ public class URLUtils implements Constants {
 				double preValue = Utils.toDouble(data.substring(start + 1, end));
 
 				retValue = Double.valueOf(Utils.minDouble(ttmValue, preValue)).toString();
+				Utils.log("Extracted Key={}, Value={} ", key, retValue);
 			}
 		} catch (Exception e) {
 			Utils.handleException(e);
 		}
-		Utils.log("Extracted Key={}, Value={} ", key, retValue);
 		return Utils.trimToEmpty(retValue);
 	}
 
+	public static String readHighestPrice(Stock stock) {
+		String highestPrice = "0";
+		try (Stream<String> stream = getStockRawData(stock)) {
+			final StringBuffer tagValue = new StringBuffer("");
+			stream.forEach(line -> {
+				tagValue.append(readDataBetween(stock, "Hi3Y", line, "PriceDataStart=", "=PriceDataEnd"));
+			});
+			if (!tagValue.isEmpty()) {
+				List<Double> pricesList = new ArrayList<>();
+				Map<?, ?> map = GSON.fromJson(tagValue.toString(), Map.class);
+				if (map.containsKey("datasets")) {
+					Object datasets = map.get("datasets");
+					if (datasets instanceof List) {
+						List<?> list = (List<?>) datasets;
+						Object object2 = list.get(0);
+						if (object2 instanceof Map) {
+							Map<?, ?> map1 = (Map<?, ?>) object2;
+							if (map1.containsKey("metric") && map1.containsValue("Price")
+									&& map1.containsKey("values")) {
+								Object object3 = map1.get("values");
+								if (object3 instanceof List) {
+									List<?> list1 = (List<?>) object3;
+									if (list1 != null && !list1.isEmpty()) {
+										for (Object object4 : list1) {
+											if (object4 instanceof List) {
+												List<?> list2 = (List<?>) object4;
+												if (list2 != null && list2.size() > 1) {
+													Object object5 = list2.get(1);
+													pricesList.add(Utils.toDoubleObject(object5));
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				highestPrice = Double.toString(pricesList.stream().mapToDouble(Double::doubleValue).max().orElse(0));
+			}
+
+		} catch (Exception e) {
+			Utils.handleException(e);
+		}
+		return highestPrice;
+	}
+
 	private static Stream<String> getStockData(Stock stock) throws Exception {
+		return streamFile(Utils.getCacheFileName(stock));
+	}
+
+	private static Stream<String> getStockRawData(Stock stock) throws Exception {
+		return streamFile(Utils.getCacheRawFileName(stock));
+	}
+
+	private static Stream<String> streamFile(String fileName) throws Exception {
 		try {
-			String fileName = DIR_CACHE + stock + ".html";
 			Path path = Paths.get(fileName);
 			return Files.lines(path, Charset.forName("UTF-8"));
 		} catch (Exception e) {
@@ -268,7 +323,11 @@ public class URLUtils implements Constants {
 	private static String downloadStockFullHTML(Stock stock) throws Exception {
 		StringBuffer buff = new StringBuffer("");
 		buff.append(downlaodUnparsedData(stock, stock.getCompanyURL()));
+		buff.append("=MedianPEDataStart=");
 		buff.append(downlaodUnparsedData(stock, stock.getMedianPEURL()));
+		buff.append("=MedianPEDataEnd=PriceDataStart=");
+		buff.append(downlaodUnparsedData(stock, stock.getPriceUrl()));
+		buff.append("=PriceDataEnd=");
 		return buff.toString();
 	}
 
@@ -496,6 +555,7 @@ public class URLUtils implements Constants {
 				jsonStock.setUrl(URL_BASE + jsonStock.getUrl());
 			}
 			jsonStock.setMedianPEURL(Utils.constructMedianPEURL(stock));
+			jsonStock.setPriceUrl(Utils.constructPriceUrl(stock));
 			Utils.log(jsonStock.toString());
 		} else {
 			Utils.logError("Json Stock is null for stock: {}", stock.getSymbol());

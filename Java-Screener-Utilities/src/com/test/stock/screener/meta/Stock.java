@@ -161,7 +161,7 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	@Override
 	public int compare(Stock o1, Stock o2) {
-		return o2.getSymbol().compareTo(o1.getSymbol());
+		return o1.getSymbol().compareTo(o2.getSymbol());
 	}
 
 	@Override
@@ -328,6 +328,10 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	public String getMedianPEURL() {
 		return jsonStock.getMedianPEURL();
+	}
+
+	public String getPriceUrl() {
+		return jsonStock.getPriceUrl();
 	}
 
 	public JsonStock getJsonStock() {

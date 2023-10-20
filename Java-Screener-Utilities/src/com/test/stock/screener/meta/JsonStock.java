@@ -5,6 +5,7 @@ public class JsonStock {
 	public String symbol;
 	public String name;
 	public String url;
+	public String priceUrl;
 	public String medianPEURL;
 	public String comments;
 
@@ -59,5 +60,13 @@ public class JsonStock {
 	@Override
 	public String toString() {
 		return "JsonStock [id=" + id + ", symbol=" + symbol + ", name=" + name + ", url=" + url + "]";
+	}
+
+	public String getPriceUrl() {
+		return priceUrl;
+	}
+
+	public void setPriceUrl(String priceUrl) {
+		this.priceUrl = priceUrl;
 	}
 }
