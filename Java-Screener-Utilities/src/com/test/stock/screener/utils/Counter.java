@@ -1,4 +1,4 @@
-package com.test.stock.screener.data;
+package com.test.stock.screener.utils;
 
 public class Counter {
 	int total = 0;

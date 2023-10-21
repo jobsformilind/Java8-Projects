@@ -7,6 +7,7 @@ public class JsonStock {
 	public String url;
 	public String priceUrl;
 	public String medianPEURL;
+	public String intradayURL;
 	public String comments;
 
 	public int getId() {
@@ -68,5 +69,13 @@ public class JsonStock {
 
 	public void setPriceUrl(String priceUrl) {
 		this.priceUrl = priceUrl;
+	}
+
+	public String getIntradayURL() {
+		return intradayURL;
+	}
+
+	public void setIntradayURL(String intradayURL) {
+		this.intradayURL = intradayURL;
 	}
 }

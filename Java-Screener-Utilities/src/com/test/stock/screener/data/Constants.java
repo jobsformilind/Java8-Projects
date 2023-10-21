@@ -10,6 +10,7 @@ public interface Constants {
 	static String URL_BASE = "https://www.screener.in";
 	static String URL_COMPANY = "https://www.screener.in/company/";
 	static String URL_API = "https://www.screener.in/api/company/";
+	static String URL_INTRADAY = "https://intradayscreener.com/api/TechnicalAnaysis/stocksnapshot/";
 	static String URL_SEARCH = "https://www.screener.in/api/company/search/?q=";
 	static String DIR_CACHE = Utils.getStocksHomeDir() + "tmp\\cache\\";
 	static String DIR_SER_CACHE = Utils.getStocksHomeDir() + "tmp\\cache_tmp\\";

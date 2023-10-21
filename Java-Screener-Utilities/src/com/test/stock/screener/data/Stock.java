@@ -26,6 +26,7 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	int cagrAvg;
 	String marketCap = "";
 	String sector = "";
+	String netStrength = "";
 
 	String cmp = "";
 	String sale1 = "";
@@ -59,6 +60,7 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 		buff.append(marketCap).append(",");
 		buff.append(sector).append(",");
+		buff.append(netStrength).append(",");
 
 		//buff.append(sale1).append(",");
 		//buff.append(sale3).append(",");
@@ -88,6 +90,7 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		buff.append("C_Avg").append(",");
 		buff.append("MCap").append(",");
 		buff.append("sector").append(",");
+		buff.append("Strength").append(",");
 
 		//buff.append("S_1").append(",");
 		//buff.append("S_3").append(",");
@@ -334,6 +337,10 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		return jsonStock.getPriceUrl();
 	}
 
+	public String getIntradayURL() {
+		return jsonStock.getIntradayURL();
+	}
+
 	public JsonStock getJsonStock() {
 		return jsonStock;
 	}
@@ -356,6 +363,14 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 
 	public void setCached(boolean cached) {
 		this.cached = cached;
+	}
+
+	public String getNetStrength() {
+		return netStrength;
+	}
+
+	public void setNetStrength(String netStrength) {
+		this.netStrength = netStrength;
 	}
 
 }

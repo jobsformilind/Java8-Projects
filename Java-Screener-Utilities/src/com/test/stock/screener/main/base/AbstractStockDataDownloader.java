@@ -3,8 +3,8 @@ package com.test.stock.screener.main.base;
 import java.util.Objects;
 import java.util.Set;
 
-import com.test.stock.screener.data.Counter;
 import com.test.stock.screener.data.Stock;
+import com.test.stock.screener.utils.Counter;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 

@@ -31,7 +31,7 @@ public class MainRunner {
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("Which program you want to run: ");
 		programsList.forEach(System.out::println);
-		int index = scanner.nextInt();
+		int index = scanner.nextInt()-1;
 		scanner.close();
 		Program program = programsList.get(index);
 		if (program == null) {

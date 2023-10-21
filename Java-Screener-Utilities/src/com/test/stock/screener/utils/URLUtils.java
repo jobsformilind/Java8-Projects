@@ -28,9 +28,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.test.stock.screener.data.Constants;
-import com.test.stock.screener.data.Counter;
 import com.test.stock.screener.data.JsonStock;
 import com.test.stock.screener.data.Stock;
+import com.test.stock.screener.pojo.IntradayStock;
 
 public class URLUtils implements Constants {
 	private static HashMap<String, String> searchURLMap = new HashMap<>();
@@ -42,8 +42,9 @@ public class URLUtils implements Constants {
 	public static String outFile = Utils.getStocksHomeDir() + "output.csv";
 	public static String logFile = Utils.getStocksHomeDir() + "output_log.log";
 	public static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	public static Type CLAZZ = new TypeToken<ArrayList<JsonStock>>() {
-	}.getType();
+	public static Type CLAZZ_JsonStock = new TypeToken<ArrayList<JsonStock>>() {}.getType();
+	private static Type CLAZZ_IntradayStock = new TypeToken<IntradayStock>(){}.getType();
+	
 
 	public static void init() throws Exception {
 		Utils.recreateFile(logFile);
@@ -328,7 +329,9 @@ public class URLUtils implements Constants {
 		buff.append(downlaodUnparsedData(stock, stock.getMedianPEURL()));
 		buff.append("=MedianPEDataEnd=PriceDataStart=");
 		buff.append(downlaodUnparsedData(stock, stock.getPriceUrl()));
-		buff.append("=PriceDataEnd=");
+		buff.append("=PriceDataEnd=NetStrengthStart=");		
+		buff.append(getNetStrength(stock.getIntradayURL()));
+		buff.append("=NetStrengthEnd=");
 		return buff.toString();
 	}
 	
@@ -535,7 +538,7 @@ public class URLUtils implements Constants {
 						searchUrl);
 				jsonStock.setComments(error);
 			} else if (data.startsWith("[")) {
-				List<JsonStock> jsonData = GSON.fromJson(data, CLAZZ);
+				List<JsonStock> jsonData = GSON.fromJson(data, CLAZZ_JsonStock);
 				if (jsonData != null) {
 					Utils.log("Found jsonData Size: {}", jsonData.size());
 					if (jsonData.size() == 1) {
@@ -562,6 +565,7 @@ public class URLUtils implements Constants {
 			}
 			jsonStock.setMedianPEURL(Utils.constructMedianPEURL(stock));
 			jsonStock.setPriceUrl(Utils.constructPriceUrl(stock));
+			jsonStock.setIntradayURL(Utils.constructIntradayURL(stock));
 			Utils.log(jsonStock.toString());
 		} else {
 			Utils.logError("Json Stock is null for stock: {}", stock.getSymbol());
@@ -601,7 +605,7 @@ public class URLUtils implements Constants {
 		List<JsonStock> jsonData = null;
 		String metadata = Utils.getFullDataFromFile(metadataFile);
 		if (Utils.isNotEmpty(metadata)) {
-			jsonData = GSON.fromJson(metadata, CLAZZ);
+			jsonData = GSON.fromJson(metadata, CLAZZ_JsonStock);
 			Utils.log("Stock MetaData read size: {}", jsonData.size());
 		}
 		return Utils.ensureList(jsonData);
@@ -647,4 +651,19 @@ public class URLUtils implements Constants {
 		searchURLMap.putAll(properties);
 	}
 
+	public static String getNetStrength(String url) {
+		String netStrength = "None";
+		try {
+			StringBuffer data = downlaodUnparsedData(url);
+			IntradayStock stock = GSON.fromJson(data.toString(), CLAZZ_IntradayStock);
+			if(stock !=null && stock.technicalSignalDaily !=null) {
+				netStrength = stock.technicalSignalDaily.netStrength.overall;
+			}
+		} catch (Exception e) {
+			Utils.handleException(e);
+		}
+		
+		return netStrength;
+	}
+	
 }

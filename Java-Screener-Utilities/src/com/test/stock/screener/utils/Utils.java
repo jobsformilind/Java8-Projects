@@ -442,6 +442,12 @@ public class Utils implements Constants {
 		}
 	}
 
+	public static String constructIntradayURL(Stock stock) {
+		StringBuffer url = new StringBuffer("");
+		url.append(URL_INTRADAY);
+		url.append(stock.getSymbol());
+		return url.toString();
+	}
 	public static String constructMedianPEURL(Stock stock) {
 		StringBuffer url = new StringBuffer("");
 		url.append(URL_API);

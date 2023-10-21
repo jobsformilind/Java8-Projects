@@ -3,8 +3,8 @@ package com.test.stock.screener.main.base;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.test.stock.screener.data.Counter;
 import com.test.stock.screener.data.Stock;
+import com.test.stock.screener.utils.Counter;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 
@@ -80,6 +80,7 @@ public abstract class AbstractCSVGenerator extends AbstractScreener {
 			stock.setEPS(URLUtils.readDataBetweenUsingEndTag(stock, "EPS", "=", "=DividendPayout%="));
 			stock.setMedianPE(URLUtils.readDataBetween(stock, "M-PE", "MedianPE=", "="));
 			stock.setPE(URLUtils.readDataBetween(stock, "PE", "StockPEarn=", "="));
+			stock.setNetStrength(URLUtils.readDataBetween(stock, "PE", "NetStrengthStart=", "=NetStrengthEnd"));
 
 			String cagrData = URLUtils.readDataBetween(stock, "CAGR_DATA", "StockPriceCAGR", "ReturnonEquity");
 			URLUtils.parseCAGR(stock, cagrData);
@@ -87,8 +88,7 @@ public abstract class AbstractCSVGenerator extends AbstractScreener {
 			String roeData = URLUtils.readDataBetween(stock, "ROE_DATA", "ReturnonEquity", "BalanceSheet");
 			URLUtils.parseROE(stock, roeData);
 
-			String profitData = URLUtils.readDataBetween(stock, "PROFIT_DATA", "CompoundedProfitGrowth",
-					"StockPriceCAGR");
+			String profitData = URLUtils.readDataBetween(stock, "PROFIT_DATA", "CompoundedProfitGrowth", "StockPriceCAGR");
 			URLUtils.parseProfit(stock, profitData);
 
 			String salesData = URLUtils.readDataBetween(stock, "SALES_DATA", "CompoundedSalesGrowth",
@@ -97,6 +97,7 @@ public abstract class AbstractCSVGenerator extends AbstractScreener {
 
 			String highestPrice = URLUtils.readHighestPrice(stock);
 			stock.setHi3y("0".equals(highestPrice) ? stock.getHi3y() : highestPrice);
+			
 		} catch (Exception e) {
 			stock.setFailed();
 			Utils.handleException(e);

@@ -12,6 +12,10 @@ public class StockDataDownloader extends AbstractStockDataDownloader {
 		setName("Stock Data Downloader");
 	}
 
+	public static void main(String[] args) throws Exception {
+		new StockDataDownloader().run();
+	}
+
 	@Override
 	protected Set<Stock> getStocksToProcess() throws Exception {
 		return URLUtils.getStocksToProcess();

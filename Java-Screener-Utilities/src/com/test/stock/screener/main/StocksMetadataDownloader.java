@@ -5,10 +5,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.test.stock.screener.data.Counter;
 import com.test.stock.screener.data.JsonStock;
 import com.test.stock.screener.data.Stock;
 import com.test.stock.screener.main.base.AbstractScreener;
+import com.test.stock.screener.utils.Counter;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 
@@ -16,6 +16,10 @@ public class StocksMetadataDownloader extends AbstractScreener {
 
 	public StocksMetadataDownloader() {
 		setName("Stocks Metadata Downloader");
+	}
+
+	public static void main(String[] args) throws Exception {
+		new StocksMetadataDownloader().run();
 	}
 
 	public void run() throws Exception {
