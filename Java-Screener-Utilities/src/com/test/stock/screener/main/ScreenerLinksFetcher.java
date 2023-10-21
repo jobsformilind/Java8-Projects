@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.test.stock.screener.data.Constants;
 import com.test.stock.screener.main.base.AbstractScreener;
 import com.test.stock.screener.utils.Functions;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
+import com.test.stock.screener.vo.Constants;
 
 public class ScreenerLinksFetcher extends AbstractScreener implements Constants {
 

@@ -3,10 +3,10 @@ package com.test.stock.screener.main.base;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.test.stock.screener.data.Stock;
 import com.test.stock.screener.utils.Counter;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
+import com.test.stock.screener.vo.Stock;
 
 public abstract class AbstractCSVGenerator extends AbstractScreener {
 	private int filter_cagr = 0;

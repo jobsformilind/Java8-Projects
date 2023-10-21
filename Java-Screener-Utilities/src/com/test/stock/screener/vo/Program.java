@@ -1,4 +1,4 @@
-package com.test.stock.screener.data;
+package com.test.stock.screener.vo;
 
 import com.test.stock.screener.main.base.AbstractScreener;
 

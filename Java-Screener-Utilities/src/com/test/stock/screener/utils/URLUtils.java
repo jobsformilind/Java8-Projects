@@ -27,10 +27,10 @@ import java.util.stream.Stream;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.test.stock.screener.data.Constants;
-import com.test.stock.screener.data.JsonStock;
-import com.test.stock.screener.data.Stock;
 import com.test.stock.screener.pojo.IntradayStock;
+import com.test.stock.screener.vo.Constants;
+import com.test.stock.screener.vo.JsonStock;
+import com.test.stock.screener.vo.Stock;
 
 public class URLUtils implements Constants {
 	private static HashMap<String, String> searchURLMap = new HashMap<>();

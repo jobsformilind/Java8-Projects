@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import com.test.stock.screener.data.Program;
 import com.test.stock.screener.main.ScreenerLinksFetcher;
 import com.test.stock.screener.main.StockCSVGenerator;
 import com.test.stock.screener.main.StockCSVGenerator_Specific;
@@ -12,6 +11,7 @@ import com.test.stock.screener.main.StockDataDownloader;
 import com.test.stock.screener.main.StockDataDownloader_Specific;
 import com.test.stock.screener.main.StocksMetadataDownloader;
 import com.test.stock.screener.main.base.AbstractScreener;
+import com.test.stock.screener.vo.Program;
 
 public class MainRunner {
 	private static List<Program> programsList = new ArrayList<>();

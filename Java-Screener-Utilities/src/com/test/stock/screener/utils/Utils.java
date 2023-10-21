@@ -24,10 +24,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.test.stock.screener.data.Constants;
-import com.test.stock.screener.data.MultiValueMap;
-import com.test.stock.screener.data.Stock;
 import com.test.stock.screener.main.base.AbstractScreener;
+import com.test.stock.screener.vo.Constants;
+import com.test.stock.screener.vo.MultiValueMap;
+import com.test.stock.screener.vo.Stock;
 
 public class Utils implements Constants {
 	private static Random RANDOM = new Random();

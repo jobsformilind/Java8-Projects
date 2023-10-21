@@ -5,12 +5,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.test.stock.screener.data.JsonStock;
-import com.test.stock.screener.data.Stock;
 import com.test.stock.screener.main.base.AbstractScreener;
 import com.test.stock.screener.utils.Counter;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
+import com.test.stock.screener.vo.JsonStock;
+import com.test.stock.screener.vo.Stock;
 
 public class StocksMetadataDownloader extends AbstractScreener {
 
