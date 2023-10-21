@@ -1,16 +1,20 @@
-package com.test.stock.screener.base;
+package com.test.stock.screener.main.base;
 
 import java.util.Objects;
 import java.util.Set;
 
-import com.test.stock.screener.meta.Counter;
-import com.test.stock.screener.meta.Stock;
+import com.test.stock.screener.data.Counter;
+import com.test.stock.screener.data.Stock;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 
-public abstract class AbstractStockDataDownloader {
+public abstract class AbstractStockDataDownloader extends AbstractScreener {
 
 	protected abstract Set<Stock> getStocksToProcess() throws Exception;
+
+	public void run() throws Exception {
+		downloadStockData();
+	}
 
 	protected void downloadStockData() throws Exception {
 		URLUtils.init();
@@ -43,7 +47,7 @@ public abstract class AbstractStockDataDownloader {
 		public DownloaderThread(Set<Stock> stocksSet) {
 			this.stocksSet = stocksSet;
 		}
-		
+
 		public void run() {
 			URLUtils.cleanupTempFiles();
 			URLUtils.handleFailedStocks(stocksSet);

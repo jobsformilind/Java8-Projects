@@ -27,19 +27,20 @@ import java.util.stream.Stream;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.test.stock.screener.meta.Constants;
-import com.test.stock.screener.meta.Counter;
-import com.test.stock.screener.meta.JsonStock;
-import com.test.stock.screener.meta.Stock;
+import com.test.stock.screener.data.Constants;
+import com.test.stock.screener.data.Counter;
+import com.test.stock.screener.data.JsonStock;
+import com.test.stock.screener.data.Stock;
 
 public class URLUtils implements Constants {
 	private static HashMap<String, String> searchURLMap = new HashMap<>();
 
 	public static String metadataFile = Utils.getStocksHomeDir() + "symbols_metadata.json";
 	public static String searchMapFile = Utils.getStocksHomeDir() + "symbols_searchMap.txt";
-	public static String inputFile = Utils.getStocksHomeDir() + "symbols_input.txt";
+	public static String inputFile = Utils.getStocksHomeDir() + "input_symbols.txt";
+	public static String urlFile = Utils.getStocksHomeDir() + "input_urls.txt";
 	public static String outFile = Utils.getStocksHomeDir() + "output.csv";
-	public static String logFile = Utils.getStocksHomeDir() + "run.log";
+	public static String logFile = Utils.getStocksHomeDir() + "output_log.log";
 	public static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	public static Type CLAZZ = new TypeToken<ArrayList<JsonStock>>() {
 	}.getType();
@@ -330,7 +331,12 @@ public class URLUtils implements Constants {
 		buff.append("=PriceDataEnd=");
 		return buff.toString();
 	}
-
+	
+	public static StringBuffer downlaodUnparsedData(String url) throws Exception {
+		Stock stock = new Stock("");
+		return downlaodUnparsedData(stock, url);
+	}
+	
 	private static StringBuffer downlaodUnparsedData(Stock stock, String url) throws Exception {
 		StringBuffer buff = new StringBuffer("");
 		try {

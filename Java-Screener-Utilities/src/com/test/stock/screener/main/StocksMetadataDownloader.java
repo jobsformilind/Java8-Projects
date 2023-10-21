@@ -1,19 +1,24 @@
-package com.test.stock.screener;
+package com.test.stock.screener.main;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.test.stock.screener.meta.Counter;
-import com.test.stock.screener.meta.JsonStock;
-import com.test.stock.screener.meta.Stock;
+import com.test.stock.screener.data.Counter;
+import com.test.stock.screener.data.JsonStock;
+import com.test.stock.screener.data.Stock;
+import com.test.stock.screener.main.base.AbstractScreener;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 
-public class StocksMetadataDownloader {
+public class StocksMetadataDownloader extends AbstractScreener {
 
-	public static void main(String[] args) throws Exception {
+	public StocksMetadataDownloader() {
+		setName("Stocks Metadata Downloader");
+	}
+
+	public void run() throws Exception {
 		URLUtils.init();
 		Set<Stock> stocksSet = URLUtils.getStocksToProcess();
 		Runtime.getRuntime().addShutdownHook(new MetaDataThread(stocksSet));
@@ -30,7 +35,7 @@ public class StocksMetadataDownloader {
 		Utils.log("Saved metadata file: {}", URLUtils.metadataFile);
 	}
 
-	private static void readStockMetaData(Set<Stock> stocksSet) {
+	private void readStockMetaData(Set<Stock> stocksSet) {
 		Counter.initCounter(stocksSet.size());
 		stocksSet.forEach(stock -> {
 			Counter.getCounter().currentIncrease();
@@ -47,7 +52,7 @@ public class StocksMetadataDownloader {
 		Utils.log("------------------------------");
 	}
 
-	private static class MetaDataThread extends Thread {
+	private class MetaDataThread extends Thread {
 		private Set<Stock> stocksSet = null;
 
 		public MetaDataThread(Set<Stock> stocksSet) {

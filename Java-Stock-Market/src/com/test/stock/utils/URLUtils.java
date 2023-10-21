@@ -430,6 +430,7 @@ public class URLUtils {
 			}
 		} catch (Exception e) {
 			log("Got exception while downloaing data : " + url);
+			e.printStackTrace();
 		}
 		return buff;
 	}
@@ -578,6 +579,7 @@ public class URLUtils {
 		try {
 			System.out.println(data);
 			data = data + "\n";
+			Utils.ensureFile(logFileName);
 			Files.write(Paths.get(logFileName), data.getBytes(), StandardOpenOption.APPEND);
 		} catch (IOException e) {
 			System.out.println("Error while writing to log file : " + logFileName);

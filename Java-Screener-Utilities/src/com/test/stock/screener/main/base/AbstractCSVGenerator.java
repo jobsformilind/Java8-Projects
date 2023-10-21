@@ -1,20 +1,23 @@
-package com.test.stock.screener.base;
-
+package com.test.stock.screener.main.base;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.test.stock.screener.meta.Counter;
-import com.test.stock.screener.meta.Stock;
+import com.test.stock.screener.data.Counter;
+import com.test.stock.screener.data.Stock;
 import com.test.stock.screener.utils.URLUtils;
 import com.test.stock.screener.utils.Utils;
 
-public abstract class AbstractCSVGenerator {
+public abstract class AbstractCSVGenerator extends AbstractScreener {
 	private int filter_cagr = 0;
 	private int filter_roe = 0;
 	private int filter_profit = 0;
 
 	protected abstract Set<Stock> getStocksToProcess() throws Exception;
+
+	public void run() throws Exception {		
+		generateCSVFile();
+	}
 
 	protected void generateCSVFile() throws Exception {
 		URLUtils.init();
@@ -30,7 +33,8 @@ public abstract class AbstractCSVGenerator {
 		stocksSet = filterByROERatio(stocksSet, filter_roe);
 		stocksSet = filterByProfitRatio(stocksSet, filter_profit);
 
-		String data = stocksSet.stream().filter(Stock::isCached).sorted().map(s -> s.getCSV()).collect(Collectors.joining("\n"));
+		String data = stocksSet.stream().filter(Stock::isCached).sorted().map(s -> s.getCSV())
+				.collect(Collectors.joining("\n"));
 		data = Stock.getCSVHeader() + data;
 		URLUtils.writeFile(URLUtils.outFile, data);
 	}
@@ -54,7 +58,7 @@ public abstract class AbstractCSVGenerator {
 		Counter.initCounter(stockSet.size());
 		stockSet.stream().sorted().forEach(s -> {
 			Counter.getCounter().currentIncrease();
-			if(s.isCached()) {
+			if (s.isCached()) {
 				Utils.log("--------------");
 				extractSingleStockData(s);
 			}
@@ -62,16 +66,16 @@ public abstract class AbstractCSVGenerator {
 		Utils.log("Stocks Data analysis is completed.");
 		Utils.log("------------------------------");
 	}
-	
+
 	private Stock extractSingleStockData(Stock stock) {
-		Utils.log("Analyzing stock data :{ " + Counter.getCounter() + " }: " + stock);		
+		Utils.log("Analyzing stock data :{ " + Counter.getCounter() + " }: " + stock);
 		try {
 			stock.setHi3y(URLUtils.readDataBetween(stock, "Hi3y", "High/Low=", "="));
 			stock.setName(URLUtils.readDataBetween(stock, "Name", "name=", "="));
 			stock.setCmp(URLUtils.readDataBetween(stock, "CMP", "CurrentPrice=", "="));
 			stock.setFaceValue(URLUtils.extractNumber(URLUtils.readTag(stock, "FaceValue", "FaceValue")));
 			stock.setSector(URLUtils.extractText(URLUtils.readDataBetween(stock, "Sector", "Sector:", "=")));
-			
+
 			stock.setMarketCap(URLUtils.readDataBetween(stock, "MarketCap", "=MarketCap=", "="));
 			stock.setEPS(URLUtils.readDataBetweenUsingEndTag(stock, "EPS", "=", "=DividendPayout%="));
 			stock.setMedianPE(URLUtils.readDataBetween(stock, "M-PE", "MedianPE=", "="));
@@ -83,14 +87,16 @@ public abstract class AbstractCSVGenerator {
 			String roeData = URLUtils.readDataBetween(stock, "ROE_DATA", "ReturnonEquity", "BalanceSheet");
 			URLUtils.parseROE(stock, roeData);
 
-			String profitData = URLUtils.readDataBetween(stock, "PROFIT_DATA", "CompoundedProfitGrowth", "StockPriceCAGR");
+			String profitData = URLUtils.readDataBetween(stock, "PROFIT_DATA", "CompoundedProfitGrowth",
+					"StockPriceCAGR");
 			URLUtils.parseProfit(stock, profitData);
 
-			String salesData = URLUtils.readDataBetween(stock, "SALES_DATA", "CompoundedSalesGrowth", "CompoundedProfitGrowth");
+			String salesData = URLUtils.readDataBetween(stock, "SALES_DATA", "CompoundedSalesGrowth",
+					"CompoundedProfitGrowth");
 			URLUtils.parseSales(stock, salesData);
-			
+
 			String highestPrice = URLUtils.readHighestPrice(stock);
-			stock.setHi3y("0".equals(highestPrice)?stock.getHi3y():highestPrice);
+			stock.setHi3y("0".equals(highestPrice) ? stock.getHi3y() : highestPrice);
 		} catch (Exception e) {
 			stock.setFailed();
 			Utils.handleException(e);

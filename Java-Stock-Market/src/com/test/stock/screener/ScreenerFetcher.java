@@ -7,7 +7,7 @@ import com.test.stock.utils.URLUtils;
 import com.test.stock.utils.Utils;
 
 public class ScreenerFetcher {
-	static String mainURL  = "https://www.screener.in/screens/97687/capacity-expansion/";
+	static String mainURL  = "https://www.screener.in/screens/837466/return-over-10years-above-20/";
 	
 	private static String url  = mainURL + "?page=";
 	private static String start = "/company/";

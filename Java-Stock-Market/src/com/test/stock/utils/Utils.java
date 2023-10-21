@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalDouble;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -154,7 +153,7 @@ public class Utils {
 
 	public static double minDouble(double... dob) {
 		try {
-			return Arrays.stream(dob).filter(d->d>0).min().orElse(0);
+			return Arrays.stream(dob).filter(d -> d > 0).min().orElse(0);
 		} catch (NumberFormatException e) {
 			return 0;
 		}
@@ -279,6 +278,7 @@ public class Utils {
 		stream.close();
 		return data;
 	}
+
 	public static void copyFile(File soureFile, File targetFile) {
 		try {
 			Path sourePath = soureFile.toPath();
@@ -286,6 +286,18 @@ public class Utils {
 			System.out.print("SourePath=" + sourePath.getFileName());
 			System.out.println(" -> TargetPath=" + targetPath.getFileName());
 			Files.copy(sourePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void ensureFile(String fileName) {
+		try {
+			Path path = Paths.get(fileName);
+			if (!Files.exists(path)) {
+				Files.createFile(Paths.get(fileName));
+				System.out.println("Creating file : " + fileName);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

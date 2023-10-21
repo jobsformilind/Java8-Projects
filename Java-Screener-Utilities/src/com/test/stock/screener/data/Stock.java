@@ -1,4 +1,4 @@
-package com.test.stock.screener.meta;
+package com.test.stock.screener.data;
 
 import java.util.Comparator;
 
@@ -41,11 +41,11 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	public String getCSV() {
 		StringBuffer buff = new StringBuffer();
 		buff.append(symbol).append(",");
-		buff.append(faceValue).append(",");
 		buff.append(name).append(",");
-		buff.append(hi3y).append(",");
+		buff.append(faceValue).append(",");
 		buff.append(cmp).append(",");
 
+		buff.append(hi3y).append(",");
 		buff.append(EPS).append(",");
 		buff.append(medianPE).append(",");
 		buff.append(Utils.defaultIfEmpty(PE, medianPE)).append(",");
@@ -60,10 +60,10 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		buff.append(marketCap).append(",");
 		buff.append(sector).append(",");
 
-		buff.append(sale1).append(",");
-		buff.append(sale3).append(",");
-		buff.append(sale5).append(",");
-		buff.append(sale10).append(",");
+		//buff.append(sale1).append(",");
+		//buff.append(sale3).append(",");
+		//buff.append(sale5).append(",");
+		//buff.append(sale10).append(",");
 
 		return buff.toString();
 	}
@@ -71,11 +71,11 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 	public static String getCSVHeader() {
 		StringBuffer buff = new StringBuffer();
 		buff.append("Symbol").append(",");
-		buff.append("FV").append(",");
 		buff.append("Name").append(",");
-		buff.append("Hi3Y").append(",");
+		buff.append("FV").append(",");
 		buff.append("CMP").append(",");
 
+		buff.append("Hi3Y").append(",");
 		buff.append("EPS").append(",");
 		buff.append("M_PE").append(",");
 		buff.append("PE").append(",");
@@ -89,10 +89,10 @@ public class Stock implements Comparator<Stock>, Comparable<Stock> {
 		buff.append("MCap").append(",");
 		buff.append("sector").append(",");
 
-		buff.append("S_1").append(",");
-		buff.append("S_3").append(",");
-		buff.append("S_5").append(",");
-		buff.append("S_10").append(",");
+		//buff.append("S_1").append(",");
+		//buff.append("S_3").append(",");
+		//buff.append("S_5").append(",");
+		//buff.append("S_10").append(",");
 
 		buff.append("\n");
 		return buff.toString();

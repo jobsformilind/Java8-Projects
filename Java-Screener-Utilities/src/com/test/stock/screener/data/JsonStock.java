@@ -1,4 +1,4 @@
-package com.test.stock.screener.meta;
+package com.test.stock.screener.data;
 
 public class JsonStock {
 	public int id;

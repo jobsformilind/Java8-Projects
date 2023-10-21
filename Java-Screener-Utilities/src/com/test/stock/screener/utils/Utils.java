@@ -2,6 +2,7 @@ package com.test.stock.screener.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,9 +24,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.test.stock.screener.meta.Constants;
-import com.test.stock.screener.meta.MultiValueMap;
-import com.test.stock.screener.meta.Stock;
+import com.test.stock.screener.data.Constants;
+import com.test.stock.screener.data.MultiValueMap;
+import com.test.stock.screener.data.Stock;
+import com.test.stock.screener.main.base.AbstractScreener;
 
 public class Utils implements Constants {
 	private static Random RANDOM = new Random();
@@ -391,7 +393,7 @@ public class Utils implements Constants {
 		Path path = Paths.get(getCacheFileName(stock));
 		return Files.exists(path);
 	}
-	
+
 	public static <T> List<T> ensureList(List<T> list) {
 		return list == null ? new ArrayList<>() : list;
 	}
@@ -431,7 +433,7 @@ public class Utils implements Constants {
 	public static void recreateFile(String fileName) {
 		try {
 			File file = new File(fileName);
-			if(file.exists()) {
+			if (file.exists()) {
 				file.delete();
 			}
 			file.createNewFile();
@@ -460,5 +462,15 @@ public class Utils implements Constants {
 			url.append(SUFFIX_CONSOLIDATED);
 		}
 		return url.toString();
+	}
+
+	public static String getName(AbstractScreener screener) {
+		String retValue = "None";
+		try {
+			retValue = screener.getName();
+		} catch (Exception e) {
+			Utils.handleException(e);
+		}
+		return retValue;
 	}
 }
