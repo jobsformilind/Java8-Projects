@@ -44,6 +44,8 @@ public class ChartInkScreener implements Constants {
 			data.getStocks().stream().filter(Stock::isMarkedNew).map(Stock::getSymbol).forEach(System.out::println);
 			System.out.println("--------------- Stocks Removed -----------");
 			data.getStocks().stream().filter(Stock::isMarkedRemoval).map(Stock::getSymbol).forEach(System.out::println);
+			System.out.println("--------------- Stocks Kept -----------");
+			data.getStocks().stream().filter(Stock::isMarkedKeep).map(Stock::getSymbol).forEach(System.out::println);
 			System.out.println("------------------------------------------");
 		});
 	}

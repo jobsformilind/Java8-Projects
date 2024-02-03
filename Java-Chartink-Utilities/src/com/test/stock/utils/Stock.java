@@ -67,16 +67,24 @@ public class Stock {
 		builder.append("]");
 		return builder.toString();
 	}
-	
+
 	public boolean isSaving() {
-		return Enums.Status.NEW == status || Enums.Status.KEEP == status;
+		return isStatus(Enums.Status.NEW) || isStatus(Enums.Status.KEEP);
+	}
+
+	public boolean isStatus(Enums.Status checkStatus) {
+		return status == checkStatus;
+	}
+
+	public boolean isMarkedKeep() {
+		return isStatus(Enums.Status.KEEP);
 	}
 
 	public boolean isMarkedRemoval() {
-		return Enums.Status.REMOVE == status;
+		return isStatus(Enums.Status.REMOVE);
 	}
 
 	public boolean isMarkedNew() {
-		return Enums.Status.NEW == status;
+		return isStatus(Enums.Status.NEW);
 	}
 }
