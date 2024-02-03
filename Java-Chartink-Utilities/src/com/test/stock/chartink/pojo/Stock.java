@@ -1,11 +1,13 @@
-package com.test.stock.utils;
+package com.test.stock.chartink.pojo;
+
+import com.test.stock.chartink.pojo.Enums.Status;
 
 public class Stock {
 
 	private String name;
 	private String nseCode;
 	private String bseCode;
-	private Enums.Status status;
+	private Status status;
 
 	public Stock(String name, String nseCode, String bseCode) {
 		this.name = name;
@@ -37,7 +39,7 @@ public class Stock {
 		this.bseCode = bseCode;
 	}
 
-	public Enums.Status getStatus() {
+	public Status getStatus() {
 		return status;
 	}
 

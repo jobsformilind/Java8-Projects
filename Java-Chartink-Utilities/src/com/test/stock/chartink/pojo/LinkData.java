@@ -1,7 +1,9 @@
-package com.test.stock.utils;
+package com.test.stock.chartink.pojo;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.test.stock.chartink.utils.Constants;
 
 public class LinkData {
 	private String linkName;

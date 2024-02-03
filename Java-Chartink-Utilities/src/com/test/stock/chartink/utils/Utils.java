@@ -1,4 +1,4 @@
-package com.test.stock.utils;
+package com.test.stock.chartink.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +17,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.test.stock.chartink.pojo.Enums;
+import com.test.stock.chartink.pojo.LinkData;
+import com.test.stock.chartink.pojo.Stock;
 
 public class Utils implements Constants {
 
@@ -332,7 +336,6 @@ public class Utils implements Constants {
 
 	public static void writeFile(String fileName, String data) {
 		try {
-			System.out.println("Writing file to path: " + fileName);
 			Files.write(Paths.get(fileName), data.getBytes());
 		} catch (Exception e) {
 			e.printStackTrace();
