@@ -1,6 +1,9 @@
 package com.test.stock.chartink.main;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,13 +30,17 @@ import com.test.stock.chartink.utils.Constants;
 import com.test.stock.chartink.utils.Utils;
 
 public class ChartInkScreener implements Constants {
+	private static DateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy - hh:mm a");
 
 	public static void main(String[] args) throws Exception {
+		LogManager.addLog("====================================================");
+		LogManager.addLog("Starting ChartInkScreener: " + formatter.format(new Date()));
 		List<String> chartlinkData = Utils.getDataFromFile(chartinkFile);
 		List<LinkData> dataList = Utils.toLinkData(chartlinkData);
 		dataList.forEach(ChartInkScreener::screenStocks);
 		Utils.validateWithExistingLinkData(dataList);
 		saveAndPrintStocks(dataList);
+		LogManager.log();
 	}
 
 	private static void saveAndPrintStocks(List<LinkData> dataList) {
@@ -41,14 +48,19 @@ public class ChartInkScreener implements Constants {
 			String stocks = data.getStocks().stream().filter(Stock::isSaving).map(Stock::getSymbol)
 					.collect(Collectors.joining("\n"));
 			Utils.writeFile(data.getDataFile(), stocks);
-			System.out.println("----- Screener Name : " + data.getLinkName());
-			System.out.println("--------------- New Stocks ---------------");
-			data.getStocks().stream().filter(Stock::isMarkedNew).map(Stock::getSymbol).forEach(System.out::println);
-			System.out.println("--------------- Stocks Removed -----------");
-			data.getStocks().stream().filter(Stock::isMarkedRemoval).map(Stock::getSymbol).forEach(System.out::println);
-			// System.out.println("--------------- Stocks Kept -----------");
-			// data.getStocks().stream().filter(Stock::isMarkedKeep).map(Stock::getSymbol).forEach(System.out::println);
-			System.out.println("------------------------------------------");
+
+			String newSymbols = data.getStocks().stream().filter(Stock::isMarkedNew).map(Stock::getSymbol).collect(Collectors.joining("\n"));
+			String removedSymbols = data.getStocks().stream().filter(Stock::isMarkedRemoval).map(Stock::getSymbol).collect(Collectors.joining("\n"));
+			//String keptSymbols = data.getStocks().stream().filter(Stock::isMarkedKeep).map(Stock::getSymbol).collect(Collectors.joining("\n"));
+			boolean hasData = (Utils.isNotEmpty(newSymbols) || Utils.isNotEmpty(removedSymbols));
+			if(hasData) {
+				LogManager.setDisplayLogs(true);
+				LogManager.addLog("Screener Name : " + data.getLinkName());
+				logSymbols(newSymbols, "==Stocks Added:==");
+				logSymbols(removedSymbols, "==Stocks Removed:==");
+				//logSymbols(keptSymbols, "==Stocks Kept:==");
+				LogManager.addLog("====================================================");
+			}
 		});
 	}
 
@@ -125,6 +137,13 @@ public class ChartInkScreener implements Constants {
 			}
 		}
 		return details;
+	}
+
+	private static void logSymbols(String symbols, String info) {
+		if(Utils.isNotEmpty(symbols)) {
+			LogManager.addLog(info);
+			LogManager.addLog(symbols);
+		}
 	}
 
 	private static HttpClient getHttpClient() {

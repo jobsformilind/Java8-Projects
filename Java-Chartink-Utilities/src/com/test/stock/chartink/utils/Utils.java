@@ -62,6 +62,15 @@ public class Utils implements Constants {
 		return null;
 	}
 
+	public static String ensureFile(String fileName) {
+		try {
+			return ensureFile(null, fileName);
+		} catch (Exception e) {
+			//Ignore
+		}
+		return null;
+	}
+
 	public static String ensureFile(String parentDirectory, String fileName) throws Exception {
 		File file = null;
 		if (parentDirectory != null && fileName != null) {
@@ -69,7 +78,7 @@ public class Utils implements Constants {
 		} else if (fileName != null) {
 			file = new File(fileName);
 		}
-		if (file != null) {
+		if (file != null && !file.exists()) {
 			file.createNewFile();
 			return file.getAbsolutePath();
 		}
@@ -93,7 +102,7 @@ public class Utils implements Constants {
 
 	public static List<String> getDataFromFile(String dataFile) throws IOException {
 		try (Stream<String> stream = Files.lines(Paths.get(dataFile))) {
-			return stream.filter(Objects::nonNull).map(s -> s.trim()).filter(Utils::isNotEmpty)
+			return stream.filter(Objects::nonNull).map(s -> s.trim()).filter(Utils::notCommented).filter(Utils::isNotEmpty)
 					.collect(Collectors.toList());
 		}
 	}
@@ -203,7 +212,9 @@ public class Utils implements Constants {
 			if (start > 0) {
 				String key = Utils.trimToEmpty(line.substring(0, start));
 				String value = Utils.trimToEmpty(line.substring(start + 1));
-				data.add(new LinkData(key, value));
+				LinkData linkData = new LinkData(key, value);
+				data.add(linkData);
+				ensureFile(linkData.getDataFile());
 			}
 		});
 		return data;
@@ -337,6 +348,16 @@ public class Utils implements Constants {
 	public static void writeFile(String fileName, String data) {
 		try {
 			Files.write(Paths.get(fileName), data.getBytes());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void log(String data) {
+		try {
+			System.out.println(data);
+			data += "\n";
+			Files.write(Paths.get(logFileName), data.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

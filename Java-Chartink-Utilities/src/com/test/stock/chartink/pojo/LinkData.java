@@ -55,7 +55,6 @@ public class LinkData {
 		return Constants.DIR_DATA_DIR + linkName + ".dat";
 	}
 
-	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("LinkData [linkName=");
