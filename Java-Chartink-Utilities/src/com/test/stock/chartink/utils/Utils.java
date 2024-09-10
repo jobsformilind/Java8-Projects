@@ -288,6 +288,13 @@ public class Utils implements Constants {
 		}
 	}
 
+	public static void sleepSilentlyMinutes(int minutes) {
+		try {
+			Thread.sleep(minutes*60000);
+		} catch (Exception e) {
+			System.out.println("***ERROROO::: Got exception during sleep...");
+		}
+	}
 	public static boolean startsWith(String command, String startsWith) {
 		if (isNotEmpty(command) && isNotEmpty(startsWith)) {
 			String upperCase = startsWith.toUpperCase();
@@ -353,11 +360,13 @@ public class Utils implements Constants {
 		}
 	}
 
-	public static void log(String data) {
+	public static void log(String data, boolean saveLogs) {
 		try {
 			System.out.println(data);
-			data += "\n";
-			Files.write(Paths.get(logFileName), data.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			if(saveLogs) {
+				data += "\n";
+				Files.write(Paths.get(logFileName), data.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

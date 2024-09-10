@@ -35,6 +35,10 @@ public class LinkData {
 		return stocks;
 	}
 
+	public void resetStocks() {
+		stocks = new ArrayList<>();
+	}
+
 	public void addStocks(List<Stock> stocks) {
 		if (stocks != null) {
 			this.stocks.addAll(stocks);

@@ -1,5 +1,6 @@
 package com.test.stock.chartink.main;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,9 +31,13 @@ import com.test.stock.chartink.utils.Constants;
 import com.test.stock.chartink.utils.Utils;
 
 public class ChartInkScreener implements Constants {
-	private static DateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy - hh:mm a");
+	protected static DateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy - hh:mm a");
 
 	public static void main(String[] args) throws Exception {
+		runChartInkScreener();
+	}
+
+	private static void runChartInkScreener() throws IOException, Exception {
 		LogManager.addLog("====================================================");
 		LogManager.addLog("Starting ChartInkScreener: " + formatter.format(new Date()));
 		List<String> chartlinkData = Utils.getDataFromFile(chartinkFile);
@@ -43,7 +48,7 @@ public class ChartInkScreener implements Constants {
 		LogManager.log();
 	}
 
-	private static void saveAndPrintStocks(List<LinkData> dataList) {
+	protected static void saveAndPrintStocks(List<LinkData> dataList) {
 		dataList.forEach(data -> {
 			String stocks = data.getStocks().stream().filter(Stock::isSaving).map(Stock::getSymbol)
 					.collect(Collectors.joining("\n"));
