@@ -1,7 +1,7 @@
 package com.test.robots.x.runner;
 
 public abstract class Runner {
-	private int number;
+	private int order;
 	private String name;
 
 	public abstract void run() throws Exception;
@@ -14,11 +14,11 @@ public abstract class Runner {
 		this.name = name;
 	}
 
-	public int getNumber() {
-		return number;
+	public int getOrder() {
+		return order;
 	}
 
-	public void setNumber(int number) {
-		this.number = number;
+	public void setOrder(int order) {
+		this.order = order;
 	}
 }
