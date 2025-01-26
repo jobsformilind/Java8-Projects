@@ -34,6 +34,8 @@ public class ChartInkScreener implements Constants {
 	protected static DateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy - hh:mm a");
 
 	public static void main(String[] args) throws Exception {
+		LogManager.setSaveLogs(true);
+		LogManager.setDisplayLogs(true);
 		runChartInkScreener();
 	}
 
@@ -101,7 +103,8 @@ public class ChartInkScreener implements Constants {
 						String name = jsonNode.get("name").asText();
 						String nsecode = jsonNode.get("nsecode").asText();
 						String bsecode = jsonNode.get("bsecode").asText();
-						Stock stock = new Stock(name, nsecode, bsecode);
+						String price = jsonNode.get("close").asText();
+						Stock stock = new Stock(name, nsecode, bsecode, price);
 						linkData.addStock(stock);
 					}
 				}

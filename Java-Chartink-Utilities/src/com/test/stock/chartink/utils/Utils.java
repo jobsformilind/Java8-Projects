@@ -226,7 +226,7 @@ public class Utils implements Constants {
 				stream.filter(Objects::nonNull).filter(Utils::notCommented).forEach(line -> {
 					Stock stock = data.getStock(line);
 					if (stock == null) {
-						stock = new Stock(line, line, line);
+						stock = new Stock(line, line, line, "");
 						stock.setStatus(Enums.Status.REMOVE);
 						data.addStock(stock);
 					} else {
@@ -365,7 +365,9 @@ public class Utils implements Constants {
 			System.out.println(data);
 			if(saveLogs) {
 				data += "\n";
-				Files.write(Paths.get(logFileName), data.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				Path path = Paths.get(logFileName);
+				Files.write(path, data.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+				System.out.println("Log file saved at: " + path.toFile().getAbsolutePath());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

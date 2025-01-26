@@ -7,36 +7,27 @@ public class Stock {
 	private String name;
 	private String nseCode;
 	private String bseCode;
+	private String price;
 	private Status status;
 
-	public Stock(String name, String nseCode, String bseCode) {
+	public Stock(String name, String nseCode, String bseCode, String price) {
 		this.name = name;
 		this.nseCode = nseCode;
 		this.bseCode = bseCode;
+		this.price = price;
+		this.status = Status.KEEP; 
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public String getNseCode() {
 		return nseCode;
 	}
 
-	public void setNseCode(String nseCode) {
-		this.nseCode = nseCode;
-	}
-
 	public String getBseCode() {
 		return bseCode;
-	}
-
-	public void setBseCode(String bseCode) {
-		this.bseCode = bseCode;
 	}
 
 	public Status getStatus() {
@@ -64,6 +55,8 @@ public class Stock {
 		builder.append(nseCode);
 		builder.append(", bseCode=");
 		builder.append(bseCode);
+		builder.append(", price=");
+		builder.append(price);
 		builder.append(", Status=");
 		builder.append(status.name());
 		builder.append("]");

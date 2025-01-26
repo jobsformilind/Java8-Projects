@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/commons-codec-1.17.1.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/commons-io-2.18.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/commons-lang3-3.17.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/commons-logging-1.3.4.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/commons-net-3.11.1.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/commons-text-1.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/dec-0.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/htmlunit-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/htmlunit-core-js-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/htmlunit-csp-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/htmlunit-cssparser-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/htmlunit-websocket-client-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/htmlunit-xpath-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/httpclient-4.5.14.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/httpcore-4.4.16.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/httpmime-4.5.14.jar"/>
+	<classpathentry kind="lib" path="lib/htmlunit-4.7.0/neko-htmlunit-4.7.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

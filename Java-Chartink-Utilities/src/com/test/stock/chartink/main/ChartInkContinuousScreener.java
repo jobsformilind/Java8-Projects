@@ -17,13 +17,13 @@ public class ChartInkContinuousScreener extends ChartInkScreener {
 		LogManager.addLog("====================================================");
 		LogManager.addLog("Starting ChartInkScreener: " + formatter.format(new Date()));
 		while (true) {		
-			List<String> chartlinkData = Utils.getDataFromFile(chartinkFile);
+			List<String> chartlinkData = Utils.getDataFromFile(chartinkIntradayFile);
 			List<LinkData> dataList = Utils.toLinkData(chartlinkData);
 			dataList.forEach(ChartInkScreener::screenStocks);
 			Utils.validateWithExistingLinkData(dataList);
 			saveAndPrintStocks(dataList);
 			LogManager.log();
-			Utils.sleepSilentlyMinutes(5);
+			Utils.sleepSilentlyMinutes(4);
 		}
 	}
 
