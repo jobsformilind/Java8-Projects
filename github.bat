@@ -1,23 +1,23 @@
 @echo off 
 
-echo ---Pull-----------------------------
+ECHO ---Pull-----------------------------
 git pull
-echo. 
+ECHO. 
 
-echo ----Status--------------------------
+ECHO ----Status--------------------------
 git status
-echo.
+ECHO.
 
-echo ---Add------------------------------
+ECHO ---Add------------------------------
 git add -A -v
-echo. 
+ECHO. 
 
-echo ---Commit/Push----------------------
+ECHO ---Commit/Push----------------------
 git commit -m "Commiting changes"
 git push
-echo. 
+ECHO. 
 
-echo ----Status--------------------------
+ECHO ----Status--------------------------
 git status
-echo. 
+ECHO. 
 pause
